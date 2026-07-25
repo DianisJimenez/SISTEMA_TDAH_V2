@@ -1,0 +1,55 @@
+/* Estilos Personalizados Clinix */
+
+/* 1. Quitar la raya sobre la foto de la doctora */
+.sidebar-wrapper .brand-container {
+    border-bottom: none !important;
+}
+
+/* 2. Estilos del Header y Navegación */
+.app-header {
+    border-bottom: 1px solid #e6ecf3 !important;
+}
+
+.breadcrumb-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 25px;
+    border-bottom: 1px solid #e6ecf3;
+    background: #fff;
+}
+
+.breadcrumb-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #26a69a;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.breadcrumb-text span {
+    color: #dee2e6;
+}
+
+/* 3. Selector de fecha */
+.date-picker-custom {
+    display: flex;
+    align-items: center;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+}
+
+.date-picker-custom .icon-box {
+    background-color: #f0f7f7;
+    padding: 4px 10px;
+    border-right: 1px solid #dee2e6;
+    color: #26a69a;
+}
+
+.date-picker-custom .date-range {
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    color: #495057;
+}

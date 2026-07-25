@@ -1,0 +1,36 @@
+/* Turquesa NeuroGuard */
+:root {
+  --turquesa: #00c2cb;
+  --turquesa-dark: #008b94;
+}
+
+.banner-registro {
+    background: linear-gradient(135deg, var(--turquesa) 0%, var(--turquesa-dark) 100%);
+}
+
+.btn-turquesa {
+    background-color: var(--turquesa) !important;
+    border-color: var(--turquesa) !important;
+    color: white !important;
+}
+
+.btn-turquesa:hover {
+    background-color: var(--turquesa-dark) !important;
+}
+
+.input-group-custom {
+    position: relative;
+}
+
+.input-group-custom i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--turquesa);
+    z-index: 10;
+}
+
+.input-group-custom .form-control {
+    padding-left: 35px;
+}

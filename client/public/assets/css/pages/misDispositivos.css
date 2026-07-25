@@ -1,0 +1,71 @@
+.device-card-clinical {
+  border: 1px solid #e0f2f1 !important;
+  background: #ffffff !important;
+  border-radius: 15px;
+  transition: all 0.2s ease-in-out;
+}
+
+.device-card-clinical h6 {
+  color: var(--text-dark) !important;
+  font-weight: 700 !important;
+}
+
+.device-card-clinical:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(43, 178, 186, 0.1) !important;
+  border-color: var(--accent-color) !important;
+}
+
+/* Recuadro de la imagen — Aumentado a 130px para mayor impacto visual */
+.device-img-container {
+  width: 130px;
+  height: 130px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  flex-shrink: 0;
+}
+
+.device-img-container img {
+  width: 95%;
+  height: 95%;
+  object-fit: contain;
+  padding: 2px;
+}
+
+/* Fila de info (conexión + descripción) siempre visible */
+.device-info-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.device-info-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+}
+
+.device-info-item i {
+  color: var(--accent-color);
+}
+
+/* Tooltip del ícono de info (por si se usa en otra sección) */
+.custom-tooltip .tooltip-inner {
+  background-color: #ffffff !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--accent-color) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+  text-align: left;
+}
+
+.custom-tooltip .tooltip-arrow::before {
+  border-top-color: var(--accent-color) !important;
+}

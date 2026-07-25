@@ -1,0 +1,79 @@
+/* ==========================================================================
+   Theme Variables — NeuroGuardX
+   Solo la DEFINICIÓN de --accent-color / --bg-body / --text-dark según el
+   tema activo ([data-theme] en <html> o <body>). El sidebar del cascarón
+   depende de --accent-color para el color activo/hover del menú.
+
+   Esto se carga en TODAS las páginas, antes de _sidebar-menu.css.
+   ========================================================================== */
+
+:root {
+  --accent-color: #3e93e8;
+  --bg-body: #f4f6f8;
+  --text-dark: #1a1a1a;
+}
+
+[data-theme="dark"] {
+  --accent-color: #343a40;
+}
+
+[data-theme="purple"] {
+  --accent-color: #6f42c1;
+}
+
+[data-theme="turquoise"] {
+  --accent-color: #20c997;
+}
+
+[data-theme="silver"] {
+  --accent-color: #adb5bd;
+}
+
+/* Utilidades de color que dependen del tema — repetidas idénticas en
+   admi.html y misDispositivos.html, por eso viven aquí y no en pages/ */
+.text-primary {
+  color: var(--accent-color) !important;
+}
+
+.btn-primary {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.btn-outline-primary {
+  color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--accent-color) !important;
+  color: #ffffff !important;
+}
+
+/* Fondo de tema — usado en headers de modales (ej. modalRegistro en
+   misDispositivos.html) y cualquier otro elemento con bg-primary de
+   Bootstrap. Sin esto, Bootstrap usa su turquesa/azul por defecto en vez
+   del color de tema. */
+.bg-primary {
+  background-color: var(--accent-color) !important;
+}
+
+/* Encabezados de tabla con color de tema — repetido idéntico (salvo el
+   segundo selector, que en la práctica nunca aplica) en admi.html y
+   pacientes.html */
+.table-primary th,
+.table thead.table-primary th {
+  background-color: var(--accent-color) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+/* Fondo global del sistema */
+html,
+body,
+.page-wrapper,
+.main-container,
+.app-container,
+.app-body {
+    background-color: var(--bg-body) !important;
+    transition: background-color 0.3s ease;
+}

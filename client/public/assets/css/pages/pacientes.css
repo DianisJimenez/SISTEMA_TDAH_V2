@@ -1,0 +1,187 @@
+.count-badge {
+  background: color-mix(in srgb, var(--accent-color), transparent 90%) !important;
+  color: var(--accent-color) !important;
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%) !important;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-wrapper i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  color: var(--accent-color) !important;
+}
+
+.search-wrapper .form-control {
+  padding-left: 45px;
+  height: 45px;
+  border-radius: 12px;
+  border: 1px solid #e6ecf3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.search-wrapper .form-control:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--accent-color), transparent 85%);
+}
+
+.filtros-card {
+  background: var(--surface-2, #ffffff);
+  border-radius: 14px;
+  padding: 10px 16px;
+}
+
+.filtro-item {
+  position: relative;
+}
+
+.filtro-item i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  color: var(--accent-color) !important;
+  pointer-events: none;
+}
+
+.filtro-select {
+  padding-left: 32px !important;
+  border: 1px solid #e6ecf3 !important;
+  background-color: color-mix(in srgb, var(--accent-color), transparent 96%) !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+  color: #4a5568;
+  transition: all 0.2s ease;
+}
+
+.filtro-select:hover {
+  border-color: color-mix(in srgb, var(--accent-color), transparent 60%) !important;
+}
+
+.filtro-select:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--accent-color), transparent 85%);
+  outline: none;
+}
+
+.btn-limpiar-filtros {
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%) !important;
+  background: color-mix(in srgb, var(--accent-color), transparent 92%) !important;
+  color: var(--accent-color) !important;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-limpiar-filtros:hover {
+  background: var(--accent-color) !important;
+  color: #fff !important;
+}
+
+.page-size-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f4f9;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.page-size-item {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6c757d;
+  cursor: pointer;
+  border-radius: 7px;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+}
+
+.page-size-item.active {
+  background: var(--accent-color) !important;
+  color: white !important;
+  box-shadow: 0 2px 5px color-mix(in srgb, var(--accent-color), transparent 70%);
+}
+
+.device-tag {
+  font-size: 10px;
+  font-weight: 700;
+  margin-right: 5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid var(--accent-color) !important;
+  color: var(--accent-color) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.paciente-foto-tabla {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--accent-color) !important;
+  background: #f0f0f0;
+  display: inline-block;
+  background-size: cover;
+  background-position: center;
+}
+
+.pagination .page-link {
+  color: var(--accent-color) !important;
+  border: 1px solid #e6ecf3 !important;
+  margin: 0 2px;
+  border-radius: 8px !important;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important;
+  border-color: color-mix(in srgb, var(--accent-color), transparent 60%) !important;
+  color: var(--accent-color) !important;
+}
+
+.pagination .page-link:focus {
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--accent-color), transparent 85%) !important;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: #fff !important;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #adb5bd !important;
+  background-color: #fff !important;
+  border-color: #e6ecf3 !important;
+}
+
+/* Badge de la columna Pronóstico: ancho fijo para que "Sin diagnóstico",
+   "Sin TDAH" y "TDAH Detectado" se vean todos del mismo tamaño sin
+   importar qué tan largo sea el texto. */
+.badge-pronostico {
+  width: 140px;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Perfil Médico — estilos propios de esta página.
+   Lo compartido con el resto del sitio (sidebar, colores de tema, botones,
+   app-body) ya vive en theme-variables.css y sidebar-menu.css — no se repite
+   aquí.
+   ========================================================================== */
+
+.sidebar-datos-medico {
+  background: #fff;
+  border-radius: 15px;
+  border: 1px solid #e6ecf3;
+  border-top: 6px solid var(--accent-color) !important;
+  transition: all 0.3s ease;
+}
+
+.profile-photo-wrapper {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #f8f9fa;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-photo-card {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s;
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(43, 178, 186, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.profile-photo-wrapper:hover .photo-overlay {
+  opacity: 1;
+}
+
+.info-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: #adb5bd;
+  font-weight: 700;
+  display: block;
+  margin-top: 15px;
+}
+
+.info-data {
+  font-size: 13px;
+  color: #28642d;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.editable-input {
+  display: none;
+  margin-top: 5px;
+  height: 35px;
+  font-size: 12px;
+}
+
+/* AGENDA DE PACIENTES RECIENTES (tarjetas clickeables, sustituyen la
+   tabla que había antes) */
+.paciente-agenda-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.paciente-agenda-item:not(:last-child) {
+  margin-bottom: 8px;
+}
+
+.paciente-agenda-item:hover {
+  background: color-mix(in srgb, var(--accent-color), transparent 94%);
+  border-color: color-mix(in srgb, var(--accent-color), transparent 75%);
+  transform: translateX(4px);
+}
+
+.paciente-agenda-foto {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--accent-color);
+  flex-shrink: 0;
+}
+
+.paciente-agenda-info {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.paciente-agenda-nombre {
+  font-weight: 700;
+  color: var(--text-dark, #1a202c);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paciente-agenda-edad {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.paciente-agenda-badge {
+  font-size: 11px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.paciente-agenda-flecha {
+  font-size: 1.3rem;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.theme-swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #e6ecf3;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.theme-swatch:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 1px var(--accent-color);
+}
+
+.id-medico-perfil,
+.ri-calendar-line {
+  color: var(--accent-color) !important;
+}
+
+.btn-success {
+  background: var(--accent-color) !important;
+  border: none;
+  border-radius: 50px;
+}

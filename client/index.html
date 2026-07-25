@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DETEC TDAH - Acceso</title>
+
+    <link rel="shortcut icon" href="assets/images/favicon.svg">
+    <link rel="preload" href="assets/images/blue-bg.jpg" as="image" fetchpriority="high">
+    <link rel="preload" href="assets/images/logoTDHA.png" as="image" fetchpriority="high">
+
+    <link rel="stylesheet" href="assets/fonts/remix/remixicon.css">
+    <link rel="stylesheet" href="assets/css/main.min.css">
+    <link rel="stylesheet" href="assets/css/pages/login.css">
+</head>
+
+<body class="login-page-bg">
+
+    <div class="page-wrapper">
+        <div class="split-container">
+
+            <!-- PANEL IZQUIERDO -->
+            <div class="brand-panel">
+                <div class="brand-content">
+                    <img src="assets/images/logoTDHA.png" alt="DETEC TDAH" fetchpriority="high">
+                    <h1>DETEC <span>TDAH</span></h1>
+                    <div class="glow-line"></div>
+                    <p>Plataforma de seguimiento y diagnóstico</p>
+                </div>
+            </div>
+
+            <!-- PANEL DERECHO -->
+            <div class="form-panel">
+                <form id="loginForm" class="login-form-box">
+
+                    <div class="welcome-block">
+                        <h2 class="welcome-title">¡Bienven<span>ido</span>!</h2>
+                        <p>Inicia sesión en <span>tu cuenta</span></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">ID de Usuario</label>
+                        <div class="input-group">
+                            <i class="ri-user-line field-icon"></i>
+                            <input type="email" id="email" class="form-control has-icon" placeholder="correo@sistema.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Protocolo de Acceso</label>
+                        <div class="input-group">
+                            <i class="ri-lock-2-line field-icon"></i>
+                            <input type="password" id="pwd" class="form-control has-icon" placeholder="••••••••" required>
+                            <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
+                                <i class="ri-eye-line" id="eyeIcon"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 text-end">
+                        <a href="/olvide-password.html" style="color:inherit; font-size: 0.85rem;">¿Olvidaste tu contraseña?</a>
+                    </div>
+
+                    <!-- El JavaScript creará dinámicamente el .error-banner aquí solo si falla el login -->
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn-primary">
+                            <span>Iniciar sesión</span>
+                            <i class="ri-arrow-right-line"></i>
+                        </button>
+                    </div>
+                    <p class="footer-text mb-0">Acceso exclusivo para personal autorizado</p>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/js/pages/index.js"></script>
+</body>
+
+</html>

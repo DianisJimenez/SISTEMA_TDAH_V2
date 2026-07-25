@@ -1,0 +1,336 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body.login-page-bg {
+  min-height: 100vh;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #e7e9ee;
+}
+
+/* ===================== PAGE WRAPPER (fondo gris) ===================== */
+.page-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* ===================== LAYOUT (tarjeta flotante, división recta vertical) ===================== */
+.split-container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  min-height: 560px;
+  display: flex;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 55px rgba(15, 30, 55, 0.25);
+}
+
+/* ===================== PANEL IZQUIERDO (AZUL - imagen real) ===================== */
+.brand-panel {
+  width: 46%;
+  /* Color sólido de respaldo: se pinta al instante, antes de que
+     blue-bg.jpg termine de descargar. Ajusta el tono si no calza
+     exacto con tu imagen. */
+  background-color: #0d1b3d;
+  background-image: url('../../images/blue-bg.jpg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 30px;
+}
+
+.brand-content {
+  text-align: center;
+  max-width: 320px;
+}
+
+.brand-content img {
+  height: 150px;
+  width: auto;
+  display: block;
+  margin: 0 auto 16px;
+  filter: drop-shadow(0 8px 22px rgba(0, 190, 255, 0.35));
+}
+
+.brand-content h1 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.brand-content h1 span {
+  color: #3fa8ff;
+}
+
+.brand-content .glow-line {
+  width: 170px;
+  height: 2px;
+  margin: 12px auto 12px;
+  background: linear-gradient(90deg, transparent, #3fa8ff, transparent);
+  box-shadow: 0 0 10px 1px rgba(63, 168, 255, 0.8);
+}
+
+.brand-content p {
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  color: #cfe3ff;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* ===================== PANEL DERECHO (FORMULARIO) ===================== */
+.form-panel {
+  width: 54%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 36px;
+}
+
+.login-form-box {
+  width: 100%;
+  max-width: 320px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.welcome-block {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.welcome-block .welcome-title {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px;
+  letter-spacing: 0.3px;
+}
+
+.welcome-block .welcome-title span {
+  color: #0d348f;
+}
+
+.welcome-block .welcome-icon {
+  display: inline-block;
+  margin-right: 6px;
+  transform: translateY(-2px);
+}
+
+.welcome-block p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.welcome-block p span {
+  color: #2563a8;
+  font-weight: 600;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  color: #1e293b !important;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: #2563a8;
+  box-shadow: 0 0 0 3px rgba(37, 99, 168, 0.12);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: #94a3b8;
+}
+
+/* contenedor del input con ícono a la izquierda y, opcional, ojo a la derecha */
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon {
+  position: absolute;
+  left: 14px;
+  color: #2563a8;
+  font-size: 1.1rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.form-control.has-icon {
+  padding-left: 42px;
+}
+
+.input-group .form-control {
+  padding-right: 42px;
+}
+
+/* Campo de contraseña más grande, como se pidió */
+#pwd {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+.input-group .input-group-text {
+  position: absolute;
+  right: 14px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.ri-eye-line {
+  color: #64748b !important;
+}
+
+.btn-primary {
+  width: 100%;
+  background: #1e3a5f !important;
+  border: none !important;
+  border-radius: 9px !important;
+  padding: 12px !important;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.25);
+  margin-top: 16px;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #2563a8 !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 168, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #cbd5e1 !important;
+  color: #64748b !important;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.footer-text {
+  color: #94a3b8;
+  font-size: 0.62rem;
+  margin-top: 14px;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+/* ===================== ADICIONES PARA DETEC TDAH (Dinamismo y Errores) ===================== */
+
+/* Oculto por defecto para evitar saltos o parpadeos rojos al cargar */
+.error-banner {
+  display: none; 
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  border: 1px solid rgb(239, 68, 68) !important;
+  color: rgb(220, 38, 38) !important;
+  padding: 11px 14px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Clase de activación inyectada por JS */
+.error-banner.show {
+  display: flex;
+  animation: fadeInError 0.25s ease-out;
+}
+
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación del círculo de carga dentro del botón */
+.spinner-border {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: text-bottom;
+  border: 0.18em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-rotation .75s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spinner-rotation {
+  to { transform: rotate(360deg); }
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 700px) {
+  .page-wrapper {
+    padding: 20px 14px;
+  }
+
+  .split-container {
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .brand-panel,
+  .form-panel {
+    width: 100%;
+  }
+}

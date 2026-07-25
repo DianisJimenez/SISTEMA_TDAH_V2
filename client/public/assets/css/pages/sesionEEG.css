@@ -1,0 +1,562 @@
+:root {
+  /* CAMBIADO: Ahora el color por defecto es el azul cielo vivo y brillante de tus tablas */
+  --medical-blue: #3b82f6; 
+  --medical-gradient: linear-gradient(135deg, #3b82f6 0%, #2bb2ba 100%);
+  --card-bg: #ffffff;
+  --eeg-header-offset: 112px;
+}
+
+[data-theme="purple"] {
+  --medical-blue: #4a148c;
+  --medical-gradient: linear-gradient(135deg, #4a148c 0%, #6f42c1 100%);
+}
+
+[data-theme="dark"] {
+  --medical-blue: #212529;
+  --medical-gradient: linear-gradient(135deg, #212529 0%, #343a40 100%);
+}
+
+[data-theme="turquoise"] {
+  --medical-blue: #004d40;
+  --medical-gradient: linear-gradient(135deg, #004d40 0%, #20c997 100%);
+}
+
+[data-theme="silver"] {
+  --medical-blue: #37474f;
+  --medical-gradient: linear-gradient(135deg, #37474f 0%, #adb5bd 100%);
+}
+
+.eeg-page-body {
+  height: calc(100vh - var(--eeg-header-offset));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.eeg-page-body > .row {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.eeg-col {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1rem;
+}
+
+.eeg-col-fill {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.eeg-col-auto {
+  flex: 0 0 auto;
+}
+
+/* ==========================================================================
+   TARJETA DE INFORMACIÓN GENERAL (CABECERA SÓLIDA AZUL CIELO)
+   ========================================================================== */
+
+.card-informe-sesion {
+  border-radius: 12px;
+  border: 1px solid #e3e7ee;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+/* Cabecera pintada con el color sólido azul cielo (o el del tema activo) */
+.card-informe-sesion .informe-header {
+  background: var(--medical-blue) !important;
+  padding: .75rem 1rem;
+  border-bottom: none;
+}
+
+/* Título e iconos en blanco puro para un contraste perfecto */
+.card-informe-sesion .informe-titulo {
+  font-size: .75rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #ffffff !important;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Folio en blanco traslúcido elegante */
+.card-informe-sesion .informe-folio {
+  font-size: .72rem;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+/* Separadores internos de las secciones del informe */
+.informe-seccion {
+  font-size: .7rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--medical-blue);
+  font-weight: 700;
+  margin: 1.2rem 0 .6rem;
+  padding-bottom: .4rem;
+  border-bottom: 2px solid color-mix(in srgb, var(--medical-blue), white 90%);
+}
+
+.informe-seccion:first-of-type {
+  margin-top: 0;
+}
+
+.informe-paciente {
+  padding-bottom: .75rem;
+  margin-bottom: .5rem;
+  border-bottom: 1px dashed #dfe3ea;
+}
+
+.informe-foto {
+  border-radius: 50%;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+}
+
+.informe-nombre {
+  font-weight: 700;
+  color: #212529;
+  font-size: .95rem;
+}
+
+.informe-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .45rem .1rem;
+  border-bottom: 1px dotted #e5e8ee;
+  font-size: .8rem;
+}
+
+.informe-row:last-child {
+  border-bottom: none;
+}
+
+.informe-label {
+  color: #8a8f9c;
+  text-transform: uppercase;
+  font-size: .68rem;
+  letter-spacing: .03em;
+  font-weight: 600;
+}
+
+.informe-value {
+  font-weight: 700;
+  color: #212529;
+  text-align: right;
+}
+
+.informe-pruebas-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  padding: .3rem .1rem 0;
+}
+
+.prueba-chip {
+  background: color-mix(in srgb, var(--accent-color), white 88%);
+  color: var(--medical-blue);
+  border: 1px solid color-mix(in srgb, var(--accent-color), white 70%);
+  font-size: .72rem;
+  font-weight: 600;
+  padding: .3rem .7rem;
+  border-radius: 50px;
+}
+
+.card-3d-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.chart-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card .card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card .chart-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+
+.datos-vivos-bar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 1rem;
+  padding: .6rem .5rem 0;
+}
+
+.datos-vivos-grupo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  flex: 1;
+  text-align: center;
+}
+
+.datos-vivos-titulo {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.datos-vivos-valor {
+  font-size: .8rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.datos-vivos-sep {
+  width: 1px;
+  align-self: stretch;
+  background: #e5e8ee;
+}
+
+.battery-header {
+  background: white;
+  padding: 6px 14px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* ==========================================================================
+   NUEVA APARIENCIA CLÍNICA MODERNA (ESTRUCTURA DE FLUJO ORIGINAL PRESERVADA)
+   ========================================================================== */
+
+.card-control-medical {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid #dcdfe6 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+  transition: none !important;
+}
+
+.card-control-medical h6.text-muted {
+  color: #7f8c8d !important;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.card-control-medical label.text-muted {
+  color: #8a8f9c !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.04em;
+}
+
+#pruebaCatalogo {
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #333333 !important;
+  border-radius: 6px !important;
+  font-size: 0.8rem;
+}
+
+.card-control-medical .btn {
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  box-shadow: none !important;
+}
+
+/* Botón Iniciar Sesión */
+.btn-sesion-iniciar {
+  background-color: var(--medical-blue) !important;
+  color: #ffffff !important;
+}
+.btn-sesion-iniciar:hover:not([disabled]) {
+  opacity: 0.9 !important;
+}
+.btn-sesion-iniciar:disabled {
+  background-color: #f1f3f5 !important;
+  border-color: #e2e6ea !important;
+  color: #adb5bd !important;
+  cursor: not-allowed;
+}
+
+/* Botón Iniciar Prueba */
+.btn-prueba-medical {
+  background-color: #1118dd !important;
+  color: #ffffff !important;
+}
+.btn-prueba-medical:hover:not([disabled]) {
+  opacity: 0.9 !important;
+}
+.btn-prueba-medical:disabled {
+  background-color: #f1f3f5 !important;
+  border-color: #e2e6ea !important;
+  color: #adb5bd !important;
+}
+
+/* Botón Terminar Prueba */
+#stopTrial {
+  background-color: #7f8c8d !important;
+  color: #ffffff !important;
+}
+#stopTrial:hover {
+  background-color: #6c7a7b !important;
+}
+
+/* Botón Finalizar Sesión */
+.btn-sesion-detener {
+  background-color: #c0392b !important;
+  color: #ffffff !important;
+}
+.btn-sesion-detener:hover {
+  background-color: #a93226 !important;
+}
+
+/* Botón Iniciar Nueva Sesión */
+#btnNuevaSesion {
+  background-color: #27ae60 !important;
+  color: #ffffff !important;
+}
+#btnNuevaSesion:hover {
+  background-color: #219653 !important;
+}
+
+/* ==========================================================================
+   CONFIGURACIONES ESPECÍFICAS PARA BOTONES DE CONEXIÓN Y ESTADOS DE PRUEBA
+   ========================================================================== */
+
+/* Botón Conectar: Color sólido azul cielo vivo y letras blancas */
+#connect {
+  background-color: var(--medical-blue) !important;
+  color: #ffffff !important;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  padding: 0.45rem 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  transition: opacity 0.15s ease;
+}
+#connect:hover {
+  opacity: 0.9 !important;
+}
+
+/* Botón Desconectar: Estilo plano y limpio que acompaña armónicamente */
+#disconnect {
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #64748b !important;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  padding: 0.45rem 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  transition: all 0.15s ease;
+}
+#disconnect:hover {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Botón Pausar Prueba */
+#pauseTrial {
+  background-color: #475569 !important;
+  color: #ffffff !important;
+}
+#pauseTrial:hover {
+  background-color: #334155 !important;
+}
+
+/* Estado Reanudar Prueba */
+.btn-prueba-reanudar,
+#pauseTrial.resume-active {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+.btn-prueba-reanudar:hover,
+#pauseTrial.resume-active:hover {
+  background-color: #059669 !important;
+}
+
+/* ==========================================================================
+   ANILLO DEL CRONÓMETRO
+   ========================================================================== */
+
+.timer-text {
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--medical-blue) !important;
+  font-weight: 700;
+  font-size: 2.4rem;
+  line-height: 1;
+  text-shadow: none !important;
+}
+
+.timer-ring-wrap {
+  position: relative;
+  width: 210px;
+  height: 210px;
+}
+
+.timer-ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  display: block;
+}
+
+.timer-ring-track {
+  fill: none;
+  stroke: #eef1f6;
+  stroke-width: 7;
+}
+
+.timer-ring-arc {
+  fill: none;
+  stroke: var(--medical-blue);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 90 463;
+  opacity: 0;
+  transform-origin: 100px 100px;
+  transition: opacity .3s ease;
+}
+
+.timer-ring-wrap.is-recording .timer-ring-arc {
+  opacity: 1;
+  animation: ringSpin 1.8s linear infinite;
+}
+
+@keyframes ringSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.timer-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+}
+
+.timer-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .15);
+  transition: background .3s ease;
+}
+
+.timer-ring-wrap.is-recording .timer-status-dot {
+  background: #ff5252;
+  animation: dotPulse 1.4s ease-out infinite;
+}
+
+@keyframes dotPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 82, 82, .6); }
+  70%  { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+}
+
+.timer-status-label {
+  font-size: .65rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #7f8c8d;
+}
+
+/* Botón Descargar CSV: dentro del anillo, sin salirse del círculo */
+.btn-descargar-csv-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 132px;
+  padding: 8px 0;
+  margin-top: 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #22a45d 0%, #0e6b38 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(14, 107, 56, 0.35);
+  transition: opacity 0.15s ease;
+}
+
+.btn-descargar-csv-ring:hover {
+  opacity: 0.9;
+}
+
+.btn-descargar-csv-ring i {
+  font-size: 0.85rem;
+}
+
+/* ========================================================================== */
+
+.sidebar-profile img,
+#sesion-foto {
+  border-color: color-mix(in srgb, var(--accent-color), transparent 70%) !important;
+}
+
+#toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+@keyframes toastIn {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastOut {
+  to {
+    transform: translateX(60px);
+    opacity: 0;
+  }
+}
+
+@keyframes toastBar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}

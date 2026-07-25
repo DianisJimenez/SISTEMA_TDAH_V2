@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DETEC TDAH - Monitor EEG</title>
+
+  <link rel="stylesheet" href="assets/fonts/remix/remixicon.css">
+  <link rel="stylesheet" href="assets/css/main.min.css">
+  <link rel="stylesheet" href="assets/vendor/overlay-scroll/OverlayScrollbars.min.css">
+
+  <link rel="stylesheet" href="assets/css/components/theme-variables.css">
+  <link rel="stylesheet" href="assets/css/components/sidebar-menu.css">
+  <link rel="stylesheet" href="assets/css/pages/sesionEEG.css">
+
+  <script type="module" src="src/sesionEEG/main.js"></script>
+</head>
+
+<body>
+
+  <div id="toast-container"></div>
+
+  <div class="page-wrapper">
+    <div class="main-container">
+
+      <nav id="sidebar" class="sidebar-wrapper"></nav>
+
+      <div class="app-container">
+
+        <div class="app-header d-flex align-items-center justify-content-between px-4 border-bottom bg-white">
+          <div class="d-flex align-items-center gap-2">
+            <button id="btnVolverPerfil" class="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center" title="Volver al perfil del paciente" style="width:34px; height:34px; border-radius:50%;">
+              <i class="ri-arrow-left-line fs-5"></i>
+            </button>
+            <h5 class="mb-0 fw-bold text-dark">Monitoreo EEG <span class="text-primary">Tiempo Real</span></h5>
+          </div>
+        </div>
+
+        <div class="bg-white border-bottom d-flex align-items-center justify-content-between px-4 py-2">
+          <div class="d-flex align-items-center gap-2 text-secondary fw-medium small">
+            <i class="ri-home-4-line"></i> <span class="text-secondary opacity-50">/</span> <span class="text-dark">Monitor EEG</span>
+          </div>
+          <div class="d-flex align-items-center border rounded overflow-hidden shadow-sm bg-white">
+            <div class="bg-primary-subtle px-3 py-1 border-end border-light"><i class="ri-calendar-line text-primary"></i></div>
+            <div id="currentDate" class="px-3 py-1 small fw-bold text-muted text-uppercase">--/--/----</div>
+          </div>
+        </div>
+
+        <div class="app-body eeg-page-body">
+
+          <div class="row gx-3 h-100">
+
+            <!-- IZQUIERDA: ficha de sesión + modelo 3D -->
+            <div class="col-xl-3 eeg-col">
+
+              <div class="card border-0 shadow-sm card-informe-sesion eeg-col-auto">
+                <div class="informe-header d-flex align-items-center justify-content-between">
+                  <p class="informe-titulo mb-0"><i class="ri-file-list-3-line me-1"></i>Información general de la sesión</p>
+                </div>
+
+                <div class="card-body">
+
+                  <h6 class="informe-seccion"><i class="ri-user-line me-1"></i>Datos del paciente</h6>
+
+                  <div class="informe-paciente d-flex align-items-center gap-3">
+                    <img src="assets/images/patient-default.png" id="sesion-foto"
+                      class="informe-foto" width="56" height="56" style="object-fit: cover;">
+                    <div class="overflow-hidden">
+                      <span class="informe-label d-block mb-1">Nombre</span>
+                      <h6 class="informe-nombre mb-0 text-truncate" id="sesion-nombre">Seleccione paciente</h6>
+                    </div>
+                  </div>
+
+                  <div class="informe-row">
+                    <span class="informe-label">ID del paciente</span>
+                    <span class="informe-value" id="sesion-id">--</span>
+                  </div>
+                  <div class="informe-row">
+                    <span class="informe-label">Edad</span>
+                    <span class="informe-value" id="sesion-edad">--</span>
+                  </div>
+                  <div class="informe-row">
+                    <span class="informe-label">Diagnóstico actual</span>
+                    <span class="informe-value" id="sesion-diagnostico">N/A</span>
+                  </div>
+
+                  <h6 class="informe-seccion"><i class="ri-clipboard-line me-1"></i>Datos de la sesión</h6>
+
+                  <div class="informe-row">
+                    <span class="informe-label">Código de sesión</span>
+                    <span class="informe-value" id="sesion-codigo">--</span>
+                  </div>
+                  <div class="informe-row">
+                    <span class="informe-label">Fecha de realización</span>
+                    <span class="informe-value" id="sesion-fecha-mini">--/--/----</span>
+                  </div>
+                  <div class="informe-row">
+                    <span class="informe-label">Pruebas a realizar</span>
+                  </div>
+                  <div class="informe-pruebas-lista" id="sesion-lista-pruebas">
+                    <span class="prueba-chip text-muted">--</span>
+                  </div>
+
+                </div>
+              </div>
+
+              <div class="card shadow-sm border-0 card-3d-wrap">
+                <div class="card-body p-0 d-flex flex-column h-100">
+                  <h6 class="fw-bold p-3 mb-0 small text-uppercase text-muted">Orientación Espacial</h6>
+                  <div id="container3d" class="bg-dark flex-grow-1 d-flex align-items-center justify-content-center"
+                    style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                    <canvas id="canvas3d" style="width: 100%; height: 100%; display: block;"></canvas>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- CENTRO: gráficas + datos en vivo -->
+            <div class="col-xl-6 eeg-col">
+
+              <div class="card shadow-sm border-0 chart-card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0 small text-uppercase text-muted">Evolución de Bandas</h6>
+                    <button id="toggleVistaSesion" type="button" class="btn btn-sm fw-bold"
+                      style="color: var(--accent-color); border: 1px solid var(--accent-color); background: transparent;">
+                      🔎 Ver sesión completa
+                    </button>
+                  </div>
+                  <div class="chart-wrap"><canvas id="bandChart"></canvas></div>
+                </div>
+              </div>
+
+              <div class="card shadow-sm border-0 chart-card">
+                <div class="card-body">
+                  <h6 class="fw-bold mb-3 small text-uppercase text-muted">Osciloscopio (Notch 50Hz)</h6>
+                  <div class="chart-wrap"><canvas id="eegChart"></canvas></div>
+                </div>
+              </div>
+
+              <div class="datos-vivos-bar eeg-col-auto">
+                <div class="datos-vivos-grupo">
+                  <span class="datos-vivos-titulo text-primary">Movimiento (IMU)</span>
+                  <span class="datos-vivos-valor">
+                    X:<span id="accelX" class="text-primary">0</span>
+                    Y:<span id="accelY" class="text-primary">0</span>
+                    Z:<span id="accelZ" class="text-primary">0</span>
+                  </span>
+                </div>
+                <div class="datos-vivos-sep"></div>
+                <div class="datos-vivos-grupo">
+                  <span class="datos-vivos-titulo text-success">EEG Raw (uV)</span>
+                  <span class="datos-vivos-valor d-block">TP9:<span id="tp9" class="text-danger">0</span> AF7:<span id="af7" class="text-success">0</span></span>
+                  <span class="datos-vivos-valor d-block">AF8:<span id="af8" class="text-primary">0</span> TP10:<span id="tp10" class="text-info">0</span></span>
+                </div>
+                <div class="datos-vivos-sep"></div>
+                <div class="datos-vivos-grupo">
+                  <span class="datos-vivos-titulo text-info">Distribución de bandas (%)</span>
+                  <span class="datos-vivos-valor d-block">θ:<span id="theta">0</span> α:<span id="alpha">0</span> β:<span id="beta">0</span></span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- DERECHA: dispositivo + control de sesión -->
+            <div class="col-xl-3 eeg-col">
+
+              <div class="card border-0 shadow-sm eeg-col-auto" style="border-radius: 15px;">
+                <div class="card-body">
+                  <h6 class="fw-bold small text-uppercase text-muted mb-3 border-bottom pb-2">
+                    <i class="ri-bluetooth-line me-1 text-primary"></i>Dispositivo
+                  </h6>
+                  <div class="d-flex justify-content-between small mb-2">
+                    <span class="text-muted">Nombre</span>
+                    <span class="fw-bold text-dark" id="muse-asignado-nombre">Cargando...</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center small mb-2">
+                    <span class="text-muted">Batería</span>
+                    <span class="battery-header d-flex align-items-center gap-1">
+                      <i class="ri-battery-2-charge-line text-success"></i>
+                      <span class="fw-bold text-dark"><span id="battery">0</span>%</span>
+                    </span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center small mb-3">
+                    <span class="text-muted">Estado</span>
+                    <span id="device-status" class="fw-bold text-danger">
+                      <i class="ri-circle-fill me-1" style="font-size:8px;"></i>Desconectado
+                    </span>
+                  </div>
+                  
+                  <button id="connect" class="btn w-100 fw-bold border-0">
+  <i class="ri-bluetooth-connect-line me-1"></i>Conectar
+                      </button>
+                  <button id="disconnect" class="btn w-100 fw-bold">
+                  <i class="ri-close-circle-line me-1"></i>Desconectar
+                      </button>   
+                </div>
+              </div>
+
+              <!-- CARD CONTROL MÉDICO: Estructura original intacta, clases de texto y bordes actualizadas -->
+              <div class="card shadow-sm border-0 card-control-medical text-dark eeg-col-fill">
+                <div class="card-body text-center py-4 d-flex flex-column justify-content-center">
+                  <h6 class="fw-bold mb-2 small text-uppercase text-muted">Sesión EEG</h6>
+
+                  <div id="timerRingWrap" class="timer-ring-wrap mx-auto mb-2">
+                    <svg class="timer-ring-svg" viewBox="0 0 200 200">
+                      <circle class="timer-ring-track" cx="100" cy="100" r="88"></circle>
+                      <circle class="timer-ring-arc" cx="100" cy="100" r="88"></circle>
+                    </svg>
+                    <div class="timer-ring-center">
+                      <span id="recordingStatusDot" class="timer-status-dot"></span>
+                      <h1 id="recordingTimer" class="mb-0 timer-text">00:00</h1>
+                      <span id="recordingStatusLabel" class="timer-status-label">En espera</span>
+                      <button id="downloadCSV" class="btn-descargar-csv-ring" style="display:none;">
+                        <i class="ri-download-2-line"></i> DESCARGAR CSV
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="d-grid gap-3 mt-3">
+                    <button id="startRecording" class="btn btn-sesion-iniciar fw-bold py-3" disabled>INICIAR SESIÓN</button>
+
+                    <div id="trialSelectorArea" style="display:none;" class="text-start">
+                      <label class="small fw-bold text-muted mb-2 ms-2">SELECCIONAR PRUEBA:</label>
+                      <select id="pruebaCatalogo" class="form-select mb-3 bg-white text-dark border-0">
+                        <option value="">Cargando catálogo...</option>
+                      </select>
+                      <button id="startTrial" class="btn btn-prueba-medical w-100 fw-bold py-2" disabled>INICIAR PRUEBA</button>
+                    </div>
+                    
+                    <button id="pauseTrial" class="btn fw-bold py-2 mt-2 w-100" style="display:none;">
+                      PAUSAR PRUEBA
+                    </button>
+                    
+                    <button id="stopTrial" class="btn w-100 fw-bold py-2 mt-2" style="display:none;">TERMINAR PRUEBA</button>
+
+                    <button id="stopRecording" class="btn btn-sesion-detener fw-bold py-3" style="display:none;">FINALIZAR SESIÓN</button>
+                  </div>
+                  
+                  <div class="mt-4">
+                    <button id="btnNuevaSesion" class="btn fw-bold py-3 mt-3 w-100" style="display:none;">
+                      + INICIAR NUEVA SESIÓN
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
+  <script src="js/shared/layout.js"></script>
+  <script>
+    if (typeof inicializarLayout === "function") {
+      inicializarLayout({
+        menuId: '',
+        skipHeader: true
+      });
+    }
+  </script>
+  <script src="js/shared/temas.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DETEC TDAH - Perfil Médico</title>
+
+  <link rel="stylesheet" href="assets/fonts/remix/remixicon.css">
+  <link rel="stylesheet" href="assets/css/main.min.css">
+  <link rel="stylesheet" href="assets/vendor/overlay-scroll/OverlayScrollbars.min.css">
+
+  <link rel="stylesheet" href="assets/css/components/theme-variables.css">
+  <link rel="stylesheet" href="assets/css/components/sidebar-menu.css">
+  <link rel="stylesheet" href="assets/css/pages/perfilMedico.css">
+</head>
+
+<body>
+  <div id="loading-wrapper"><div class="spin-wrapper"><div class="circle"></div><div class="circle"></div></div></div>
+
+  <div class="page-wrapper">
+    <div class="main-container">
+
+      <nav id="sidebar" class="sidebar-wrapper"></nav>
+
+      <div class="app-container">
+
+        <div class="app-header d-flex align-items-center justify-content-between px-4 border-bottom bg-white"></div>
+
+        <div class="bg-white border-bottom d-flex align-items-center justify-content-between px-4 py-2">
+          <div class="d-flex align-items-center gap-2 text-secondary fw-medium small">
+            <i class="ri-home-4-line"></i> <span class="text-secondary opacity-50">/</span> <span class="text-dark fw-bold">Mi Perfil</span>
+          </div>
+
+          <div class="d-flex align-items-center gap-3">
+            <!-- Último acceso: solo existe en esta página, no viene del layout compartido -->
+            <div class="d-flex align-items-center border rounded overflow-hidden shadow-sm bg-white">
+              <div class="bg-primary-subtle px-3 py-1 border-end border-light"><i class="ri-time-line text-primary"></i></div>
+              <div id="ultimoAcceso" class="px-3 py-1 small fw-bold text-muted">Último acceso: --</div>
+            </div>
+
+            <div class="d-flex align-items-center border rounded overflow-hidden shadow-sm bg-white">
+              <div class="bg-primary-subtle px-3 py-1 border-end border-light"><i class="ri-calendar-line"></i></div>
+              <div id="currentDate" class="px-3 py-1 small fw-bold text-muted text-uppercase">--/--/----</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-body">
+          <div class="row gx-3">
+            <div class="col-xl-4 col-lg-5 mb-3">
+              <div class="card sidebar-datos-medico shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <div class="profile-photo-wrapper" onclick="document.getElementById('inputFoto').click();">
+                        <img src="assets/images/doctor6.png" class="profile-photo-card img-medico-perfil">
+                        <div class="photo-overlay"><i class="ri-camera-fill fs-2"></i></div>
+                    </div>
+                    <input type="file" id="inputFoto" hidden accept="image/*">
+
+                    <h5 class="fw-bold mt-3 mb-0 view-mode" id="view_nombre_completo">---</h5>
+                    <input type="text" id="edit_nombre" class="form-control editable-input text-center" placeholder="Nombre completo">
+
+                    <button id="btnEditar" class="btn btn-sm btn-outline-primary w-100 mt-3">EDITAR INFORMACIÓN</button>
+                    <button id="btnGuardar" class="btn btn-sm btn-success w-100 mt-3" style="display:none;">GUARDAR CAMBIOS</button>
+
+                  <hr class="my-4">
+                  <div class="row text-start g-2">
+                    <div class="col-6"><label class="info-label">Especialidad</label><p class="info-data view-mode" id="view_especialidad">---</p><input type="text" id="edit_especialidad" class="form-control editable-input"></div>
+                    <div class="col-6"><label class="info-label">Cédula Esp.</label><p class="info-data view-mode" id="view_cedula_esp">---</p><input type="text" id="edit_cedula_esp" class="form-control editable-input"></div>
+                    <div class="col-6"><label class="info-label">Cédula Gral.</label><p class="info-data view-mode" id="view_cedula_gen">---</p><input type="text" id="edit_cedula_gen" class="form-control editable-input"></div>
+                    <div class="col-6"><label class="info-label">Teléfono</label><p class="info-data view-mode" id="view_telefono">---</p><input type="text" id="edit_telefono" class="form-control editable-input"></div>
+                    <div class="col-12"><label class="info-label">Correo</label><p class="info-data view-mode" id="view_correo">---</p><input type="email" id="edit_correo" class="form-control editable-input"></div>
+                    <div class="col-6"><label class="info-label">CURP</label><p class="info-data view-mode" id="view_curp">---</p><input type="text" id="edit_curp" class="form-control editable-input"></div>
+                    <div class="col-6"><label class="info-label">RFC</label><p class="info-data view-mode" id="view_rfc">---</p><input type="text" id="edit_rfc" class="form-control editable-input"></div>
+                    <div class="col-12"><label class="info-label">Nacimiento</label><p class="info-data view-mode" id="view_fecha_nac">---</p><input type="date" id="edit_fecha_nac" class="form-control editable-input"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-8 col-lg-7">
+              <div class="card shadow-sm border-0 mb-3" style="border-radius: 15px;">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <h6 class="fw-bold m-0 text-primary">TEMA DEL SISTEMA</h6>
+                  <div class="d-flex align-items-center gap-2">
+                    <button class="theme-swatch" style="background:#3e93e8;" onclick="cambiarTema('light')" title="Claro"><i class="ri-sun-line"></i></button>
+                    <button class="theme-swatch" style="background:#343a40;" onclick="cambiarTema('dark')" title="Oscuro"><i class="ri-moon-line"></i></button>
+                    <button class="theme-swatch" style="background:#6f42c1;" onclick="cambiarTema('purple')" title="Morado"><i class="ri-palette-line"></i></button>
+                    <button class="theme-swatch" style="background:#20c997;" onclick="cambiarTema('turquoise')" title="Turquesa"><i class="ri-drop-line"></i></button>
+                    <button class="theme-swatch" style="background:#adb5bd;" onclick="cambiarTema('silver')" title="Plateado"><i class="ri-contrast-2-line"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold m-0 text-primary">NUEVOS PACIENTES EN EL SISTEMA</h6>
+                </div>
+                <div class="card-body p-3" id="listaPacientesPerfil"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+  <script src="js/shared/layout.js"></script>
+  <script src="js/shared/temas.js"></script>
+  <script src="js/pages/perfilMedico.js"></script>
+</body>
+</html>

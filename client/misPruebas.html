@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DETEC TDAH - Pruebas</title>
+
+  <link rel="stylesheet" href="assets/fonts/remix/remixicon.css">
+  <link rel="stylesheet" href="assets/css/main.min.css">
+  <link rel="stylesheet" href="assets/vendor/overlay-scroll/OverlayScrollbars.min.css">
+
+  <link rel="stylesheet" href="assets/css/components/theme-variables.css">
+  <link rel="stylesheet" href="assets/css/components/sidebar-menu.css">
+  <link rel="stylesheet" href="assets/css/pages/misPruebas.css">
+</head>
+
+<body>
+
+  <div id="loading-wrapper">
+    <div class="spin-wrapper">
+      <div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div>
+      <div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div>
+    </div>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="main-container">
+
+      <nav id="sidebar" class="sidebar-wrapper"></nav>
+
+      <div class="app-container">
+
+        <div class="app-header d-flex align-items-center justify-content-between px-4 border-bottom bg-white"></div>
+
+        <div class="bg-white border-bottom d-flex align-items-center justify-content-between px-4 py-2">
+          <div class="d-flex align-items-center gap-2 text-secondary fw-medium small">
+            <i class="ri-home-4-line"></i> <span class="text-secondary opacity-50">/</span> <span class="text-dark">Catálogo Médico</span>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2" id="contador-pruebas">
+              Pruebas: 0
+            </div>
+            <button class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold btn-sm" data-bs-toggle="modal" data-bs-target="#modalRegistroPrueba">
+              <i class="ri-add-line me-1"></i> Nueva Prueba
+            </button>
+          </div>
+        </div>
+
+        <div class="app-body">
+          <div class="row gx-4 gy-4" id="contenedorPruebas"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalRegistroPrueba" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Registrar Nueva Prueba</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="formNuevaPrueba">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-uppercase">Nombre de la Prueba</label>
+              <input type="text" id="nombrePrueba" class="form-control shadow-none" placeholder="Ej: Test N-Back" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-uppercase">Descripción del Protocolo</label>
+              <textarea id="descPrueba" class="form-control shadow-none" rows="3" placeholder="Instrucciones clínicas..." required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-uppercase">Imagen de Referencia</label>
+              <input type="file" id="fotoPrueba" class="form-control shadow-none" accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2 mt-2 text-uppercase">Guardar en Sistema</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalEditarPrueba" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Editar Prueba</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="formEditarPrueba">
+            <input type="hidden" id="editIdPrueba">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-uppercase">Nombre</label>
+              <input type="text" id="editNombrePrueba" class="form-control shadow-none" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-uppercase">Descripción</label>
+              <textarea id="editDescPrueba" class="form-control shadow-none" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-uppercase">Actualizar Imagen</label>
+              <input type="file" id="editFotoPrueba" class="form-control shadow-none" accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2 mt-2 text-uppercase">Guardar Cambios</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+  <script src="js/shared/layout.js"></script>
+  <script src="js/shared/temas.js"></script>
+  <script src="js/pages/misPruebas.js"></script>
+</body>
+</html>

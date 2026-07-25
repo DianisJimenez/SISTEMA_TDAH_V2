@@ -1,0 +1,268 @@
+import { Router } from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { pool } from '../config/db.js';
+import { uploadCSV } from '../middlewares/upload.js';
+import { manejarErrorServidor } from '../middlewares/manejarError.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const RAIZ_PROYECTO = path.join(__dirname, '..');
+
+const router = Router();
+
+router.post('/iniciar-sesion', async (req, res) => {
+    try {
+        const { pacienteId, dispositivoId, nombrePaciente } = req.body;
+        const query = `INSERT INTO sesiones_paciente 
+            (paciente_id, dispositivo_id, nombre_paciente, fecha_hora, diagnostico) 
+            VALUES (?, ?, ?, NOW(), 'Sin diagnóstico')`;
+        const [result] = await pool.query(query, [
+            pacienteId || null,
+            dispositivoId || null,
+            nombrePaciente || null
+        ]);
+        res.status(200).json({ success: true, idSesion: result.insertId });
+    } catch (error) {
+        manejarErrorServidor(res, error, 'POST /api/iniciar-sesion');
+    }
+});
+
+function numeroSeguro(valor, porDefecto = 0) {
+    const n = parseFloat(valor);
+    return Number.isFinite(n) ? n : porDefecto;
+}
+
+// El string "0" es truthy en JS, por eso se compara explícito contra los valores posibles
+function interrupcionABooleanoSeguro(valor) {
+    return (valor === '1' || valor === 1 || valor === true || valor === 'true') ? 1 : 0;
+}
+
+// .fields() en vez de .single(): ahora llegan el CSV de sesión Y los CSV por prueba
+router.post(
+    '/guardar-sesion-completa',
+    uploadCSV.fields([
+        { name: 'archivo_csv', maxCount: 1 },
+        { name: 'archivos_csv_pruebas', maxCount: 10 }
+    ]),
+    async (req, res) => {
+
+        const {
+            idSesion, pacienteId, dispositivoId, nombrePaciente,
+            duracionTotal, totalPruebas, avgAlpha, avgBeta, avgTheta,
+            pruebasDetalle, evolucionBandas, interrupcionConexion
+        } = req.body;
+
+        const archivoCSVSesion = req.files?.archivo_csv?.[0] || null;
+        const archivosCSVPruebas = req.files?.archivos_csv_pruebas || [];
+
+        const rutaCSVParaBD = archivoCSVSesion ? `uploads/${archivoCSVSesion.filename}` : null;
+
+        const duracionTotalNum = numeroSeguro(duracionTotal);
+        const totalPruebasNum = parseInt(totalPruebas, 10) || 0;
+        const avgAlphaNum = numeroSeguro(avgAlpha);
+        const avgBetaNum = numeroSeguro(avgBeta);
+        const avgThetaNum = numeroSeguro(avgTheta);
+        const interrupcionConexionNum = interrupcionABooleanoSeguro(interrupcionConexion);
+
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            let idSesionCreada;
+
+            if (idSesion) {
+                const sqlUpdate = `UPDATE sesiones_paciente SET 
+                paciente_id = ?, dispositivo_id = ?, nombre_paciente = ?, 
+                duracion_total_seg = ?, total_pruebas = ?, 
+                avg_alpha = ?, avg_beta = ?, avg_theta = ?, csv_ruta = ?, interrupcion_conexion = ?
+                WHERE id_sesion = ?`;
+
+                await connection.query(sqlUpdate, [
+                    pacienteId, dispositivoId, nombrePaciente,
+                    duracionTotalNum, totalPruebasNum, avgAlphaNum, avgBetaNum, avgThetaNum,
+                    rutaCSVParaBD, interrupcionConexionNum, idSesion
+                ]);
+
+                idSesionCreada = idSesion;
+            } else {
+                const sqlSesion = `INSERT INTO sesiones_paciente 
+                (paciente_id, dispositivo_id, nombre_paciente, duracion_total_seg, total_pruebas, avg_alpha, avg_beta, avg_theta, csv_ruta, interrupcion_conexion, diagnostico) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Sin diagnóstico')`;
+
+                const [result] = await connection.query(sqlSesion, [
+                    pacienteId, dispositivoId, nombrePaciente, duracionTotalNum,
+                    totalPruebasNum, avgAlphaNum, avgBetaNum, avgThetaNum, rutaCSVParaBD, interrupcionConexionNum
+                ]);
+
+                idSesionCreada = result.insertId;
+            }
+
+            if (pruebasDetalle) {
+                const detalles = typeof pruebasDetalle === 'string' ? JSON.parse(pruebasDetalle) : pruebasDetalle;
+                if (detalles.length > 0) {
+                    const sqlDetalle = `INSERT INTO detalles_pruebas_sesion 
+                        (sesion_id, nombre_prueba, segundo_inicio, duracion_neta_seg, avg_theta, avg_alpha, avg_beta, csv_ruta) VALUES ?`;
+
+                    // Cada prueba se empareja con su CSV por posición en el arreglo 
+                    const valoresDetalle = detalles.map((p, i) => {
+                        const archivoDeEstaPrueba = archivosCSVPruebas[i] || null;
+                        const rutaCSVPrueba = archivoDeEstaPrueba ? `uploads/${archivoDeEstaPrueba.filename}` : null;
+
+                        return [
+                            idSesionCreada,
+                            p.nombre,
+                            numeroSeguro(p.inicioRelativo),
+                            numeroSeguro(p.duracionNeto),
+                            numeroSeguro(p.avgTheta),
+                            numeroSeguro(p.avgAlpha),
+                            numeroSeguro(p.avgBeta),
+                            rutaCSVPrueba
+                        ];
+                    });
+                    await connection.query(sqlDetalle, [valoresDetalle]);
+                }
+            }
+
+            if (evolucionBandas) {
+                const datosEvolucion = typeof evolucionBandas === 'string' ? evolucionBandas : JSON.stringify(evolucionBandas);
+                await connection.query('UPDATE sesiones_paciente SET datos_grafica = ? WHERE id_sesion = ?', [datosEvolucion, idSesionCreada]);
+            }
+
+            await connection.commit();
+
+            res.status(200).json({
+                success: true,
+                mensaje: "Sesión sincronizada correctamente",
+                idSesion: idSesionCreada
+            });
+
+        } catch (error) {
+            await connection.rollback();
+            manejarErrorServidor(res, error, 'POST /api/guardar-sesion-completa');
+        } finally {
+            connection.release();
+        }
+    });
+
+router.get('/historial-paciente/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const query = `
+            SELECT 
+                s.*, 
+                d.nombre AS nombre_dispositivo,
+                (SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'nombre', dp.nombre_prueba, 
+                        'inicio', dp.segundo_inicio, 
+                        'duracion', dp.duracion_neta_seg,
+                        'avg_theta', dp.avg_theta,
+                        'avg_alpha', dp.avg_alpha,
+                        'avg_beta', dp.avg_beta,
+                        'csv_ruta', dp.csv_ruta
+                    )
+                ) FROM detalles_pruebas_sesion dp WHERE dp.sesion_id = s.id_sesion) as detalles_pruebas
+            FROM sesiones_paciente s
+            LEFT JOIN dispositivos d ON s.dispositivo_id = d.id
+            WHERE s.paciente_id = ?
+            ORDER BY s.fecha_hora DESC
+        `;
+        const [rows] = await pool.query(query, [id]);
+        res.status(200).json(rows);
+    } catch (error) {
+        manejarErrorServidor(res, error, 'GET /api/historial-paciente/:id');
+    }
+});
+
+router.get('/sesiones/:id/evolucion', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await pool.query(
+            'SELECT datos_grafica FROM sesiones_paciente WHERE id_sesion = ?',
+            [id]
+        );
+
+        if (rows.length === 0 || !rows[0].datos_grafica) {
+            return res.status(404).json({ error: 'Sin datos de gráfica para esta sesión' });
+        }
+
+        const datos = typeof rows[0].datos_grafica === 'string'
+            ? JSON.parse(rows[0].datos_grafica)
+            : rows[0].datos_grafica;
+
+        res.status(200).json(datos);
+    } catch (error) {
+        manejarErrorServidor(res, error, 'GET /api/sesiones/:id/evolucion');
+    }
+});
+
+router.put('/sesiones/:id/diagnostico', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { diagnostico, comentario } = req.body;
+        const valoresValidos = ['Sin diagnóstico', 'Sin TDAH', 'TDAH Detectado'];
+
+        if (!valoresValidos.includes(diagnostico)) {
+            return res.status(400).json({ success: false, error: "Valor de diagnóstico no válido" });
+        }
+
+        if (comentario !== undefined) {
+            await pool.query('UPDATE sesiones_paciente SET diagnostico = ?, comentario = ? WHERE id_sesion = ?', [diagnostico, comentario, id]);
+        } else {
+            await pool.query('UPDATE sesiones_paciente SET diagnostico = ? WHERE id_sesion = ?', [diagnostico, id]);
+        }
+        res.json({ success: true });
+    } catch (error) {
+        manejarErrorServidor(res, error, 'PUT /api/sesiones/:id/diagnostico');
+    }
+});
+
+router.get('/ultimo-resultado/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await pool.query(
+            `SELECT diagnostico FROM sesiones_paciente WHERE paciente_id = ? ORDER BY fecha_hora DESC LIMIT 1`,
+            [id]
+        );
+        if (rows.length === 0) return res.json({ diagnostico: null });
+        res.json({ diagnostico: rows[0].diagnostico });
+    } catch (error) {
+        manejarErrorServidor(res, error, 'GET /api/ultimo-resultado/:id');
+    }
+});
+
+router.delete('/sesiones/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [sesionRows] = await pool.query('SELECT csv_ruta FROM sesiones_paciente WHERE id_sesion = ?', [id]);
+        const [detallesRows] = await pool.query('SELECT csv_ruta FROM detalles_pruebas_sesion WHERE sesion_id = ?', [id]);
+
+        await pool.query('DELETE FROM detalles_pruebas_sesion WHERE sesion_id = ?', [id]);
+        const [result] = await pool.query('DELETE FROM sesiones_paciente WHERE id_sesion = ?', [id]);
+
+        if (result.affectedRows > 0) {
+            const rutasABorrar = [
+                ...(sesionRows.length > 0 && sesionRows[0].csv_ruta ? [sesionRows[0].csv_ruta] : []),
+                ...detallesRows.filter(d => d.csv_ruta).map(d => d.csv_ruta)
+            ];
+
+            rutasABorrar.forEach((ruta) => {
+                const rutaCompleta = path.join(RAIZ_PROYECTO, ruta); // ya no está dentro de public/, ahora vive directo en uploads/
+                fs.unlink(rutaCompleta, (err) => {
+                    if (err) console.error('⚠️ No se pudo borrar el CSV físico:', rutaCompleta, err.message);
+                });
+            });
+
+            res.json({ success: true, message: "Sesión eliminada" });
+        } else {
+            res.status(404).json({ success: false, message: "No se encontró la sesión" });
+        }
+    } catch (error) {
+        manejarErrorServidor(res, error, 'DELETE /api/sesiones/:id');
+    }
+});
+
+export default router;

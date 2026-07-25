@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DETEC TDAH - Mis Pacientes</title>
+
+  <link rel="stylesheet" href="assets/fonts/remix/remixicon.css">
+  <link rel="stylesheet" href="assets/css/main.min.css">
+  <link rel="stylesheet" href="assets/vendor/overlay-scroll/OverlayScrollbars.min.css">
+
+  <link rel="stylesheet" href="assets/css/components/theme-variables.css">
+  <link rel="stylesheet" href="assets/css/components/sidebar-menu.css">
+  <link rel="stylesheet" href="assets/css/pages/pacientes.css">
+</head>
+
+<body>
+
+  <div id="loading-wrapper">
+    <div class="spin-wrapper">
+      <div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div>
+    </div>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="main-container">
+
+      <!-- Contenedor del Menú Lateral (Se llena mediante layout.js) -->
+      <nav id="sidebar" class="sidebar-wrapper"></nav>
+      
+      <div class="app-container">
+
+        <!-- Contenedor de la Barra Superior (Se llena mediante layout.js) -->
+        <div class="app-header d-flex align-items-center justify-content-between px-4 border-bottom"></div>
+
+        <!-- Barra de Navegación Secundaria (Migas de pan y Fecha del sistema) -->
+        <div class="bg-white border-bottom d-flex align-items-center justify-content-between px-4 py-2">
+          <div class="d-flex align-items-center gap-2 text-secondary fw-medium small">
+            <i class="ri-home-4-line"></i> <span class="text-secondary opacity-50">/</span> <span class="text-dark">Mis Pacientes</span>
+          </div>
+          <div class="d-flex align-items-center border rounded overflow-hidden shadow-sm bg-white">
+            <div class="bg-primary-subtle px-3 py-1 border-end border-light">
+              <i class="ri-calendar-line text-primary"></i>
+            </div>
+            <!-- El motor de layout se encargará de inyectar la fecha actual -->
+            <div id="currentDate" class="px-3 py-1 small fw-bold text-muted text-uppercase">--/--/----</div>
+          </div>
+        </div>
+
+        <div class="app-body">
+
+          <!-- Buscador y Tarjeta de Filtros -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <div class="search-wrapper">
+                <i class="ri-search-line"></i>
+                <input type="text" id="inputBusqueda" class="form-control" placeholder="Buscar pacientes...">
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="filtros-card shadow-sm">
+                <div class="row g-2 align-items-center">
+                  <div class="col-md-2">
+                    <div class="filtro-item">
+                      <i class="ri-bluetooth-line"></i>
+                      <select id="filtroDispositivo" class="form-select form-select-sm filtro-select">
+                        <option value="todos">Equipo: Todos</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="filtro-item">
+                      <i class="ri-pulse-line"></i>
+                      <select id="filtroEstado" class="form-select form-select-sm filtro-select">
+                        <option value="todos">Estado: Todos</option>
+                        <option value="Sin Sesión">Sin Sesión</option>
+                        <option value="En Sesión">En Sesión</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="filtro-item">
+                      <i class="ri-brain-line"></i>
+                      <select id="filtroPronostico" class="form-select form-select-sm filtro-select">
+                        <option value="todos">Pronóstico: Todos</option>
+                        <option value="Sin diagnóstico">Sin diagnóstico</option>
+                        <option value="Sin TDAH">Sin TDAH</option>
+                        <option value="TDAH Detectado">TDAH Detectado</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="filtro-item">
+                      <i class="ri-user-3-line"></i>
+                      <select id="filtroSexo" class="form-select form-select-sm filtro-select">
+                        <option value="todos">Sexo: Todos</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="filtro-item">
+                      <i class="ri-sort-desc"></i>
+                      <select id="filtroOrden" class="form-select form-select-sm filtro-select">
+                        <option value="reciente">Ordenar: Recientes</option>
+                        <option value="antiguo">Antiguos</option>
+                        <option value="az">A-Z</option>
+                        <option value="za">Z-A</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <button id="btnResetFiltros" class="btn btn-sm w-100 rounded-pill btn-limpiar-filtros">
+                      <i class="ri-refresh-line"></i> Limpiar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Listado de Pacientes -->
+          <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold text-dark">Listado de Pacientes</h6>
+                <a href="agregarPacientes.html" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
+                  <i class="ri-user-add-line me-1"></i> Agregar Paciente
+                </a>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table align-middle m-0">
+                  <thead class="table-primary">
+                    <tr>
+                      <th class="ps-4" style="width: 80px;">Foto</th>
+                      <th>Paciente / Equipos</th>
+                      <th>Edad</th>
+                      <th>Estado</th>
+                      <th>Pronóstico</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cuerpoTabla"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Paginación -->
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+              <small id="infoPaginacion" class="text-muted fw-bold"></small>
+              <div class="d-flex align-items-center gap-4">
+                <div class="page-size-container" id="pageSizeOptions">
+                    <button class="page-size-item active" data-value="5">5</button>
+                    <button class="page-size-item" data-value="10">10</button>
+                    <button class="page-size-item" data-value="20">20</button>
+                </div>
+                <ul class="pagination pagination-sm mb-0" id="controlesPaginacion"></ul>
+              </div>
+            </div>
+          </div>
+
+        </div> 
+      </div> 
+    </div> 
+  </div> 
+
+  <!-- Scripts base -->
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Lógica y Componentes -->
+  <script src="js/shared/layout.js"></script>
+  <script src="js/shared/temas.js"></script>
+  <script src="js/pages/pacientes.js"></script>
+</body>
+</html>

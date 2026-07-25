@@ -1,0 +1,20 @@
+{
+  "name": "neuroguardx-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "form-data": "^4.0.5",
+    "multer": "^2.1.1",
+    "mysql2": "^3.16.2",
+    "nodemailer": "^9.0.3",
+    "resend": "^6.18.0"
+  }
+}

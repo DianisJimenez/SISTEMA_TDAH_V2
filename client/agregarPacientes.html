@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DETEC TDAH - Nuevo Registro</title>
+
+  <link rel="stylesheet" href="assets/fonts/remix/remixicon.css">
+  <link rel="stylesheet" href="assets/css/main.min.css">
+  <link rel="stylesheet" href="assets/vendor/overlay-scroll/OverlayScrollbars.min.css">
+
+  <link rel="stylesheet" href="assets/css/components/theme-variables.css">
+  <link rel="stylesheet" href="assets/css/components/sidebar-menu.css">
+  <link rel="stylesheet" href="assets/css/pages/agregarPacientes.css">
+</head>
+
+<body>
+
+  <div id="loading-wrapper">
+    <div class="spin-wrapper">
+      <div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div>
+    </div>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="main-container">
+
+      <nav id="sidebar" class="sidebar-wrapper"></nav>
+
+      <div class="app-container">
+
+        <div class="app-header d-flex align-items-center justify-content-between px-4 border-bottom bg-white shadow-sm"></div>
+
+        <div class="bg-white border-bottom d-flex align-items-center justify-content-between px-4 py-2">
+          <div class="d-flex align-items-center gap-2 text-secondary fw-medium small">
+            <i class="ri-home-4-line"></i> <span class="text-secondary opacity-50">/</span> <span class="text-dark">Registro de Pacientes</span>
+          </div>
+          <div class="d-flex align-items-center border rounded overflow-hidden shadow-sm bg-white">
+            <div class="bg-primary-subtle px-3 py-1 border-end border-light">
+              <i class="ri-calendar-line text-primary"></i>
+            </div>
+            <div id="currentDate" class="px-3 py-1 small fw-bold text-muted text-uppercase">--/--/----</div>
+          </div>
+        </div>
+
+        <div class="app-body">
+          <div class="container-fluid">
+
+            <div class="registro-wrap mt-4">
+
+              <!-- BANNER SUPERIOR -->
+              <div class="registro-banner">
+                <div class="registro-banner-icon">
+                  <i class="ri-user-add-fill"></i>
+                </div>
+                <div>
+                  <h2 class="fw-bold mb-1">Nuevo paciente</h2>
+                  <p class="mb-0 opacity-85">Completa la información básica para dar de alta al paciente en el sistema.</p>
+                </div>
+              </div>
+
+              <!-- CUERPO DEL FORMULARIO -->
+              <div class="registro-body">
+                <form id="formRegistro" novalidate>
+
+                  <!-- GRID HORIZONTAL DE SECCIONES -->
+                  <div class="registro-grid">
+
+                    <!-- SECCIÓN: DATOS PERSONALES -->
+                    <div class="registro-seccion">
+                      <div class="registro-seccion-titulo">
+                        <span class="registro-seccion-icono"><i class="ri-user-3-line"></i></span>
+                        <div>
+                          <h6 class="mb-0">Datos personales</h6>
+                          <span class="text-muted small">Identificación básica</span>
+                        </div>
+                      </div>
+
+                      <div class="registro-seccion-body">
+                        <div class="mb-3">
+                          <label class="form-label">Nombre completo <span class="text-danger">*</span></label>
+                          <input type="text" id="nombre" class="form-control" placeholder="Nombre y Apellidos" required>
+                          <span class="registro-error" id="nombreError"></span>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Fecha de nacimiento <span class="text-danger">*</span></label>
+                          <input type="date" id="fecha_nacimiento" class="form-control" required>
+                          <span class="registro-error" id="fechaNacimientoError"></span>
+                        </div>
+                        <div class="row g-3">
+                          <div class="col-6">
+                            <label class="form-label">Edad</label>
+                            <input type="number" id="edad" class="form-control" placeholder="0" readonly required>
+                          </div>
+                          <div class="col-6">
+                            <label class="form-label">Género</label>
+                            <select id="sexo" class="form-select">
+                              <option value="Masculino">Masculino</option>
+                              <option value="Femenino">Femenino</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- SECCIÓN: CONTACTO E IDENTIFICACIÓN OFICIAL -->
+                    <div class="registro-seccion">
+                      <div class="registro-seccion-titulo">
+                        <span class="registro-seccion-icono"><i class="ri-contacts-book-line"></i></span>
+                        <div>
+                          <h6 class="mb-0">Contacto</h6>
+                          <span class="text-muted small">Para localizar al paciente</span>
+                        </div>
+                      </div>
+
+                      <div class="registro-seccion-body">
+                        <div class="mb-3">
+                          <label class="form-label">Teléfono de contacto</label>
+                          <input type="tel" id="telefono" class="form-control" placeholder="10 dígitos"
+                                 maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="off">
+                          <span class="registro-help">Debe contener exactamente 10 dígitos.</span>
+                          <span class="registro-error" id="telefonoError"></span>
+                        </div>
+                        <div>
+                          <label class="form-label">CURP</label>
+                          <input type="text" id="curp" class="form-control" maxlength="18"
+                                 style="text-transform: uppercase;" autocomplete="off"
+                                 placeholder="Ej: ABCD900101HDFXYZ01">
+                          <span class="registro-help">18 caracteres, formato oficial de CURP.</span>
+                          <span class="registro-error" id="curpError"></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- SECCIÓN: DATOS CLÍNICOS -->
+                    <div class="registro-seccion">
+                      <div class="registro-seccion-titulo">
+                        <span class="registro-seccion-icono"><i class="ri-stethoscope-line"></i></span>
+                        <div>
+                          <h6 class="mb-0">Datos clínicos</h6>
+                          <span class="text-muted small">Información médica</span>
+                        </div>
+                      </div>
+
+                      <div class="registro-seccion-body">
+                        <div>
+                          <label class="form-label">Tipo de sangre</label>
+                          <select id="tipo_sangre" class="form-select">
+                            <option value="O+">O+</option><option value="O-">O-</option>
+                            <option value="A+">A+</option><option value="B+">B+</option>
+                            <option value="AB+">AB+</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- CONSENTIMIENTO -->
+                  <div class="registro-consentimiento">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="consentimiento" required>
+                      <label class="form-check-label fw-bold small text-dark" for="consentimiento">
+                        Acepta el consentimiento informado para el registro.
+                      </label>
+                    </div>
+                    <span class="registro-error" id="consentimientoError"></span>
+                  </div>
+
+                  <!-- ACCIONES -->
+                  <div class="registro-acciones">
+                    <a href="pacientes.html" class="btn btn-registro-cancelar">Cancelar</a>
+                    <button type="submit" class="btn btn-registro-guardar">
+                      <i class="ri-save-3-line me-2"></i>Guardar registro
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+  <script src="js/shared/layout.js"></script>
+  <script src="js/shared/temas.js"></script>
+  <script src="js/pages/agregarPacientes.js"></script>
+
+</body>
+</html>

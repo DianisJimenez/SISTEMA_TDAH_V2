@@ -1,0 +1,109 @@
+/* ==========================================================================
+   Sidebar Menu (óvalos) — NeuroGuardX
+   Componente del CASCARÓN — se repite igual en todas las páginas con layout.
+   Depende de --accent-color (definida en assets/css/style.css o donde tengas
+   las variables de tema :root / [data-theme]).
+
+   NOTA: esta es la versión "CORREGIDA" que ya tenías en misDispositivos.html.
+   admi.html tenía la versión vieja con el bug del ícono poniéndose negro en
+   hover/active — al centralizar aquí, admi.html queda arreglado también.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap');
+
+.sidebar-wrapper .sidebar-menu li a {
+  display: flex;
+  align-items: center;
+  padding: 10px 18px !important;
+  margin: 6px 14px !important;
+  border-radius: 50px !important;
+  transition: all 0.3s ease;
+  border: none !important;
+  background-color: transparent;
+  color: #6c757d;
+  text-decoration: none;
+}
+
+/* Estado ACTIVO y HOVER: fondo suave del color de tema (10% opacidad) */
+.sidebar-wrapper .sidebar-menu li.active > a,
+.sidebar-wrapper .sidebar-menu li:hover > a {
+  background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important;
+  color: var(--accent-color) !important;
+}
+
+/* Cuadrito del ícono: SIEMPRE blanco (el !important evita que se ponga negro) */
+.sidebar-wrapper .sidebar-menu li a i {
+  background-color: #ffffff !important;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  margin-right: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  color: #adb5bd;
+}
+
+/* Ícono cuando está activo/hover: mantiene fondo blanco, solo cambia el color del símbolo */
+.sidebar-wrapper .sidebar-menu li.active > a i,
+.sidebar-wrapper .sidebar-menu li:hover > a i {
+  background-color: #ffffff !important;
+  color: var(--accent-color) !important;
+}
+
+/* Contenedor de la marca (logo + título) en el sidebar — también repetido
+   idéntico en admi.html y misDispositivos.html */
+.brand-container {
+  padding: 1.15rem 0 0.9rem;
+}
+
+.app-brand {
+  gap: 12px !important;
+}
+
+/* Logo en el brand-container del sidebar — también repetido idéntico
+   en admi.html y misDispositivos.html */
+.logo-custom {
+  height: 46px;
+  width: auto;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.08));
+}
+
+/* Título "DETEC TDAH" junto al logo — dos líneas escalonadas, tipografía
+   propia (profesional, no manuscrita), con degradado del color de tema */
+.brand-title {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Sora', 'Segoe UI', sans-serif;
+  line-height: 1;
+}
+
+.brand-title-top {
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  color: #7b8794;
+  text-transform: uppercase;
+}
+
+.brand-title-bottom {
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  margin-top: 1px;
+  margin-left: 16px;
+  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #000 30%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Contenedor central del contenido — mismo max-width/padding en todas las
+   páginas con layout (admi.html, pacientes.html), es parte del cascarón */
+.app-body {
+  padding: 1rem 1.5rem !important;
+  max-width: 1400px;
+  margin: 0 auto;
+}

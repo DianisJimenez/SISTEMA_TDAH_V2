@@ -1,0 +1,124 @@
+/* ==========================================================================
+   Page: admi.html (Panel de Administración)
+   Todo esto es contenido propio de esta página, no se comparte con otras.
+   ========================================================================== */
+
+/* Tarjetas de dispositivos (franja compacta del inicio) */
+.device-card-clinical {
+  border: 1px solid #e6ecf3 !important;
+  background: #ffffff;
+  margin-bottom: 1rem;
+  border-radius: 15px;
+  transition: transform 0.2s;
+}
+
+.device-card-clinical:hover {
+  transform: translateY(-5px);
+}
+
+.device-img-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.device-img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+
+.status-muted {
+  font-size: 9px;
+  font-weight: 700;
+  color: #adb5bd;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.dot-offline {
+  background-color: #dee2e6;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Subtítulo debajo del título de cada gráfica */
+.chart-subtitulo {
+  font-size: 0.75rem;
+  color: #9aa3b2;
+  display: block;
+}
+
+/* Gráficas de Chart.js (historial + dona) */
+.chart-box-clinical {
+  position: relative;
+  height: 240px;
+  width: 100%;
+}
+
+/* Total centrado dentro de la dona */
+.chart-dona-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dona-centro {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.dona-centro-num {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2b2f3a;
+  line-height: 1;
+}
+
+.dona-centro-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: #9aa3b2;
+  font-weight: 600;
+}
+
+/* Fila de paciente clicable en la tabla de recientes */
+.fila-paciente-clicable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.fila-paciente-clicable:hover {
+  background-color: #f4f7fb;
+}
+
+/* Fotos de pacientes en la tabla */
+.paciente-foto-tabla {
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--accent-color) !important;
+  background: #f0f0f0;
+}
+
+.device-title {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}

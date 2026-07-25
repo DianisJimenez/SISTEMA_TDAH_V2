@@ -1,0 +1,232 @@
+/* ==========================================================================
+   Page: agregarPacientes.html (Nuevo Registro de Paciente)
+   Diseño: banner superior + formulario dividido en secciones con íconos.
+   Todo esto es contenido propio de esta página, no se comparte con otras.
+   Depende de --accent-color y --bg-body (definidas en theme-variables.css).
+   ========================================================================== */
+
+body, .app-container {
+  background-color: var(--bg-body) !important;
+  transition: background-color 0.3s ease;
+}
+
+.registro-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+/* --- BANNER SUPERIOR --- */
+.registro-banner {
+  background: var(--accent-color) !important;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 32px 40px;
+  transition: background 0.3s ease;
+}
+
+.registro-banner-icon {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.registro-banner h2 {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.registro-banner p {
+  font-size: 0.9rem;
+}
+
+/* --- CUERPO --- */
+.registro-body {
+  padding: 32px 40px 40px;
+}
+
+/* --- GRID HORIZONTAL DE SECCIONES --- */
+.registro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+/* --- SECCIONES (ahora tarjetas independientes, no franjas apiladas) --- */
+.registro-seccion {
+  border: 1px solid #eef0f3;
+  border-radius: 14px;
+  padding: 20px;
+  background: #fdfdfe;
+  height: 100%;
+}
+
+.registro-seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.registro-seccion-icono {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-color), transparent 88%);
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.registro-seccion-icono i {
+  display: block;
+}
+
+.registro-seccion-titulo h6 {
+  font-weight: 700;
+  color: #2b2f36;
+}
+
+/* --- CAMPOS --- */
+.form-label {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: #555;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--accent-color), transparent 85%);
+}
+
+#edad[readonly] {
+  background-color: #f1f2f4;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* --- AYUDA Y ERRORES --- */
+.registro-help {
+  display: block;
+  font-size: 0.72rem;
+  color: #9aa1ac;
+  margin-top: 4px;
+}
+
+.registro-error {
+  display: none;
+  font-size: 0.75rem;
+  color: #dc3545;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.registro-error.show {
+  display: block;
+}
+
+.form-control.is-invalid-custom {
+  border-color: #dc3545 !important;
+}
+
+/* --- CONSENTIMIENTO --- */
+.registro-consentimiento {
+  margin-top: 8px;
+  padding: 16px 18px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid var(--accent-color);
+}
+
+/* --- ACCIONES --- */
+.registro-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn-registro-cancelar {
+  padding: 11px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #6c757d;
+  background: transparent;
+  border: 1px solid #dee1e5;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.btn-registro-cancelar:hover {
+  background: #f1f2f4;
+  color: #495057;
+}
+
+.btn-registro-guardar {
+  padding: 11px 28px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: white !important;
+  background: var(--accent-color) !important;
+  border: none;
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.btn-registro-guardar:hover {
+  filter: brightness(0.9);
+  transform: translateY(-2px);
+}
+
+/* --- RESPONSIVE ---
+   El grid ya es fluido por sí solo gracias a auto-fit/minmax:
+   en pantallas anchas caben las 3 tarjetas en una fila, y se van
+   acomodando a 2 o 1 columna conforme se angosta la pantalla, sin
+   necesidad de reglas adicionales para eso. Aquí solo ajustamos
+   espaciados y los botones para pantallas chicas. */
+@media (max-width: 768px) {
+  .registro-banner {
+    padding: 24px;
+  }
+  .registro-body {
+    padding: 24px;
+  }
+  .registro-acciones {
+    flex-direction: column-reverse;
+  }
+  .btn-registro-cancelar,
+  .btn-registro-guardar {
+    justify-content: center;
+    width: 100%;
+  }
+}

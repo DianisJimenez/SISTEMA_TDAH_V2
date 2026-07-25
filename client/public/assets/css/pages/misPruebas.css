@@ -1,0 +1,84 @@
+body, .app-container {
+  background-color: var(--bg-body) !important;
+  transition: background-color 0.3s ease;
+}
+
+.device-card-clinical {
+  border: none !important;
+  background: #ffffff;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.device-card-clinical:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid var(--accent-color) !important;
+}
+
+.device-img-full {
+  width: 100%;
+  height: 130px;
+  background: #f8f9fa;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.device-img-full img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.device-card-clinical:hover .device-img-full img {
+  transform: scale(1.06);
+}
+
+.btn-action {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: #f8f9fa;
+  border: none;
+}
+
+.btn-action:hover {
+  background: var(--accent-color) !important;
+  color: white !important;
+  transform: scale(1.1);
+}
+
+.modal-header {
+  background-color: var(--accent-color) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+.modal-footer .btn-primary,
+.modal-body .btn-primary,
+.modal-body .btn-dark {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: white !important;
+}
+
+.badge.bg-primary-subtle {
+  background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important;
+  color: var(--accent-color) !important;
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%) !important;
+}
