@@ -1,4 +1,4 @@
-import { API_BASE, idPacienteURL, idMuseURL, liveState } from './state.js';
+import { API_BASE, idPacienteURL, idMuseURL, idSesionResumirURL, liveState } from './state.js';
 import { sesionState } from './sesion-state.js';
 import { showStatusMessage } from './ui.js';
 import { resetearFiltros, promediarBandasEnRango } from './filtros-bandas.js';
@@ -30,6 +30,12 @@ function updateTimer() {
 document.getElementById("startRecording").onclick = async () => {
     if (sesionState.recording) return;
 
+    // si viene ?sesion= en la URL, se reanuda esa sesión en vez de crear una nueva
+    if (idSesionResumirURL) {
+        sesionState.idSesionActual = idSesionResumirURL;
+        const elCodigoSesion = document.getElementById('sesion-codigo');
+        if (elCodigoSesion) elCodigoSesion.innerText = `SES-${sesionState.idSesionActual} (reanudada)`;
+    } else {
     // Crea la sesión en la BD para tener el id_sesion real
     try {
         const resSesion = await fetch(`${API_BASE}/api/iniciar-sesion`, {
@@ -52,6 +58,7 @@ document.getElementById("startRecording").onclick = async () => {
     } catch (e) {
         console.error("Error creando la sesión en BBDD:", e);
         showStatusMessage("No se pudo conectar con el servidor para iniciar sesión", "#e74c3c");
+    }
     }
 
     sesionState.recording = true;
@@ -257,7 +264,7 @@ document.getElementById("stopRecording").onclick = () => {
     }
 };
 
-// Recorta sesionState.csvRows en un CSV por prueba, usando los marcadores _START/_END_DUR_ ya existentes.
+// Recorta sesionState.csvRows en un CSV por prueba, usando los marcadores _START/_END_DUR_ ya existentes
 function dividirCSVPorPruebas() {
     const encabezado = sesionState.csvRows[0];
     const filas = sesionState.csvRows.slice(1);

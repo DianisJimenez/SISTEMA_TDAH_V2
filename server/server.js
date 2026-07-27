@@ -62,7 +62,7 @@ app.get(/^\/(?!api).*/, (req, res) => {
 // --- 5. INICIO DEL SERVIDOR ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`\n🚀 SERVIDOR DETEC TDAH CORRIENDO EN: http://localhost:${PORT}`);
+    console.log(`\n SERVIDOR DETEC TDAH CORRIENDO EN: http://localhost:${PORT}`);
     console.log(`📂 Modo: ${isProd ? 'producción (client/dist)' : 'desarrollo (client/public + client/)'}`);
     console.log(`📂 Carpeta de subidas: ${path.join(__dirname, 'uploads')}`);
 });

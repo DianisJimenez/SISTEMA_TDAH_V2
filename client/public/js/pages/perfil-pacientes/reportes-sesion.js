@@ -1,6 +1,4 @@
-// Modal "Ver Resumen" de una sesión: bandas, desglose de pruebas y gráfica EEG.
-// El PDF vive aparte en reportes-pdf.js. Depende de cacheSesiones (paciente-perfil.js)
-
+// Modal "Ver Resumen" de una sesión: bandas, desglose de pruebas y gráfica EEG
 async function verResumen(i) {
     const s = cacheSesiones[i];
     let detalles = [];
@@ -25,7 +23,7 @@ async function verResumen(i) {
     badge.style.background = `${diagnosticoColor}22`;
     badge.style.color = diagnosticoColor;
 
-    // interrupcion_conexion llega como 0/1 desde MySQL, por eso el Number(...)
+    // interrupcion_conexion 
     const huboInterrupcion = Number(s.interrupcion_conexion) === 1;
     if (huboInterrupcion) {
         contenido.querySelector('.seccion-alerta-interrupcion').classList.remove('d-none');
@@ -131,6 +129,7 @@ async function verResumen(i) {
     });
 
     // Redibuja la gráfica si se cambia el tamaño de la ventana con el modal abierto.
+    // Con debounce para no repetir el bucle de temblor que arreglamos con responsive:false.
     $(window).off('resize.reporteGrafica').on('resize.reporteGrafica', function () {
         clearTimeout(window._resizeGraficaTimeout);
         window._resizeGraficaTimeout = setTimeout(() => dibujarGraficaDesdeJSON(s.id_sesion), 200);
@@ -145,11 +144,34 @@ async function verResumen(i) {
         descargarReportePDF(i);
     });
 
-    $('#btnDescargarCSV').off('click').on('click', function () {
-        if (s.csv_ruta) {
-            descargarArchivo(s.csv_ruta, `EEG_Sesion_${s.id_sesion}.csv`);
-        } else {
-            alert("No hay un archivo CSV registrado para esta sesión.");
+    $('#btnDescargarCSV').off('click').on('click', async function () {
+        const boton = this;
+        const textoOriginal = boton.innerHTML;
+        boton.disabled = true;
+        boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generando...';
+
+        try {
+            const res = await fetch(`/api/sesiones/${s.id_sesion}/descargar-csv-completo`);
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                alert(data.error || "No se pudo generar el CSV de esta sesión.");
+                return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `EEG_Sesion_${s.id_sesion}_completa.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error("Error descargando CSV completo:", e);
+            alert("No se pudo descargar el CSV de esta sesión.");
+        } finally {
+            boton.disabled = false;
+            boton.innerHTML = textoOriginal;
         }
     });
 }
@@ -287,13 +309,14 @@ async function dibujarGraficaDesdeJSON(idSesion) {
 
         if (window.chartReporte) window.chartReporte.destroy();
 
-
+        // El contenedor es quien da el scroll horizontal; el canvas puede ser más ancho que él
         const contenedorCanvas = canvasEl.parentElement;
         contenedorCanvas.style.overflowX = 'auto';
         contenedorCanvas.style.overflowY = 'hidden';
         contenedorCanvas.style.boxSizing = 'border-box';
 
         // Legend fija en HTML, pegada arriba de la gráfica (junto al título), que no se mueve
+        // con el scroll horizontal ni se corta como pasaba con la leyenda propia de Chart
         const legendItems = [
             { label: 'Eventos', color: '#00C853' },
             { label: 'Theta', color: '#FF6B6B' },
@@ -315,15 +338,12 @@ async function dibujarGraficaDesdeJSON(idSesion) {
         `).join('');
 
         // Ancho dinámico según la duración real: a mayor duración, más ancho (con scroll),
-        // en vez de aplastar todos los picos dentro del mismo espacio fijo.
+        // en vez de aplastar todos los picos dentro del mismo espacio fijo
         const PX_POR_SEGUNDO = 9; // suficiente separación para distinguir los picos de 1s
         const anchoMinimo = contenedorCanvas.clientWidth || 600;
         const anchoCalculado = Math.round(duracionSesion * PX_POR_SEGUNDO);
         const anchoFijo = Math.max(anchoMinimo, anchoCalculado);
         const necesitaScroll = anchoCalculado > anchoMinimo;
-
-        // Más alta que el original, pero sin pasarse: 420px hacía que el MODAL completo
-        // (no solo la gráfica) necesitara scroll vertical. 300px es un término medio.
         const altoFijo = 300;
         contenedorCanvas.style.height = `${altoFijo}px`;
         canvasEl.width = anchoFijo;
@@ -332,7 +352,7 @@ async function dibujarGraficaDesdeJSON(idSesion) {
         canvasEl.style.height = `${altoFijo}px`;
 
         // Si el canvas cabe completo en el contenedor (sesión corta), se centra con margen.
-        // Si necesita scroll (sesión larga), sin margen y arrancando en 0 para no tapar el eje Y.
+        // Si necesita scroll (sesión larga), sin margen y arrancando en 0 para no tapar el eje Y
         if (necesitaScroll) {
             canvasEl.style.margin = '0';
             contenedorCanvas.scrollLeft = 0;

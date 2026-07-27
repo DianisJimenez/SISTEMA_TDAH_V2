@@ -1,6 +1,3 @@
-// Sesión que está siendo editada en el modal de pronóstico (se guarda al
-// abrir el modal con el ícono de cerebro, y se usa cuando se le da a
-// "Guardar pronóstico").
 let sesionEnEdicionPronostico = null;
 
 function pintarBadgeDiagnostico(span, diagnostico) {
@@ -43,12 +40,15 @@ async function cargarHistorialSesiones() {
             fila.querySelector('.campo-total-pruebas').textContent = `${s.total_pruebas} pruebas`;
 
             // Si nunca se ha hecho un pronóstico, s.diagnostico debe llegar
-            // como "Sin diagnóstico" (así lo guarda el backend por defecto).
+            // como "Sin diagnóstico" (así lo guarda el backend por defecto)
             pintarBadgeDiagnostico(fila.querySelector('.campo-badge-diagnostico'), s.diagnostico);
 
             fila.querySelector('.btn-ver-resumen').addEventListener('click', () => verResumen(i));
             fila.querySelector('.btn-eliminar-sesion').addEventListener('click', () => confirmarEliminarSesion(s.id_sesion));
             fila.querySelector('.btn-realizar-pronostico').addEventListener('click', () => abrirModalPronostico(s));
+
+            const btnReanudar = fila.querySelector('.btn-reanudar-sesion');
+            revisarSiFaltanPruebas(s.id_sesion, s.dispositivo_id, btnReanudar);
 
             tbody.appendChild(fila);
         });
@@ -58,8 +58,30 @@ async function cargarHistorialSesiones() {
     }
 }
 
+// Consulta al backend si a esta sesión le faltan pruebas por hacer, y si es
+// así, muestra el botón de reanudar ya listo para llevar al usuario a
+// iniciarSesion.html con solo las pruebas pendientes
+async function revisarSiFaltanPruebas(idSesion, dispositivoId, btnReanudar) {
+    if (!btnReanudar) return;
+    try {
+        const res = await fetch(`/api/sesiones/${idSesion}/pruebas-faltantes`);
+        const data = await res.json();
+        if (data.completa || !data.pruebasFaltantes?.length) return;
+
+        const idsFaltantes = data.pruebasFaltantes.map(p => p.id).join(',');
+        btnReanudar.classList.remove('d-none');
+        btnReanudar.title = `Reanudar sesión (faltan: ${data.pruebasFaltantes.map(p => p.nombre).join(', ')})`;
+        btnReanudar.addEventListener('click', () => {
+            const dev = dispositivoId ? `&dev=${dispositivoId}` : '';
+            window.location.href = `/iniciarSesion.html?id=${id}${dev}&pruebas=${idsFaltantes}&sesion=${idSesion}`;
+        });
+    } catch (e) {
+        console.error("Error revisando pruebas faltantes:", e);
+    }
+}
+
 // Abre el modal de pronóstico precargado con el valor actual de la sesión
-// (si ya tenía uno) y deja marcada esa sesión como la que se va a editar.
+// (si ya tenía uno) y deja marcada esa sesión como la que se va a editar
 function abrirModalPronostico(sesion) {
     sesionEnEdicionPronostico = sesion;
     document.getElementById('idSesionPronostico').textContent = `#${sesion.id_sesion}`;
@@ -106,7 +128,7 @@ document.getElementById('btnGuardarPronostico').addEventListener('click', async 
 });
 
 // Guarda el diagnóstico de una sesión específica (lo pone el médico a mano
-// por ahora). No recarga toda la tabla, solo avisa si algo falló.
+// por ahora). No recarga toda la tabla, solo avisa si algo falló
 async function guardarDiagnosticoSesion(sesion, diagnostico) {
     try {
         const res = await fetch(`/api/sesiones/${sesion.id_sesion}/diagnostico`, {

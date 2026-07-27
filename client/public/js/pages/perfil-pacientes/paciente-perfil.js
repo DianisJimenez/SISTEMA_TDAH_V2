@@ -255,7 +255,7 @@ function actualizarTarjetasPruebasManual() {
 
 $(document).ready(function () {
 
-    // Tope máximo seleccionable en el date picker: hoy (evita fechas futuras desde la UI)
+    // Tope máximo seleccionable en el date picker
     $('#editFecha').attr('max', new Date().toISOString().split('T')[0]);
     $('#editFecha').on('change input', function () {
         $(this).removeClass('is-invalid');
@@ -337,13 +337,15 @@ $(document).ready(function () {
             return;
         }
 
-        if (pruebasIds.length === 0) {
-            alert("Selecciona al menos una prueba para el paciente.");
+        // Se exige exactamente 4 pruebas seleccionadas para poder iniciar la sesión
+        const PRUEBAS_REQUERIDAS = 4;
+        if (pruebasIds.length !== PRUEBAS_REQUERIDAS) {
+            alert(`Debes seleccionar ${PRUEBAS_REQUERIDAS} pruebas para iniciar la sesión (tienes ${pruebasIds.length} seleccionadas`);
             return;
         }
 
         const urlDestino = `iniciarSesion.html?id=${id}&dev=${dispositivoId}&pruebas=${pruebasIds.join(',')}`;
-        console.log("Iniciando sesión en NeuroGuardX:", urlDestino);
+        console.log("Iniciando sesión DETEC TDAH", urlDestino);
         window.location.href = urlDestino;
     });
 });

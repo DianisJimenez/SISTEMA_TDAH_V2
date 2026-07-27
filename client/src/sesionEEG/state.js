@@ -7,6 +7,7 @@ export const API_BASE = window.location.origin;
 const urlParams = new URLSearchParams(window.location.search);
 export const idPacienteURL = urlParams.get('id');
 export const idMuseURL = urlParams.get('dev');
+export const idSesionResumirURL = urlParams.get('sesion'); // si viene, se está reanudando una sesión incompleta en vez de crear una nueva
 
 // Valores en vivo que escribe dispositivo-conexion.js y lee visual3d-graficas.js
 export const liveState = {

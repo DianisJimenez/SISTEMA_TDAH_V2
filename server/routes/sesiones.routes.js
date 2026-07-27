@@ -11,7 +11,6 @@ const __dirname = path.dirname(__filename);
 const RAIZ_PROYECTO = path.join(__dirname, '..');
 
 const router = Router();
-
 router.post('/iniciar-sesion', async (req, res) => {
     try {
         const { pacienteId, dispositivoId, nombrePaciente } = req.body;
@@ -34,12 +33,10 @@ function numeroSeguro(valor, porDefecto = 0) {
     return Number.isFinite(n) ? n : porDefecto;
 }
 
-// El string "0" es truthy en JS, por eso se compara explícito contra los valores posibles
 function interrupcionABooleanoSeguro(valor) {
     return (valor === '1' || valor === 1 || valor === true || valor === 'true') ? 1 : 0;
 }
 
-// .fields() en vez de .single(): ahora llegan el CSV de sesión Y los CSV por prueba
 router.post(
     '/guardar-sesion-completa',
     uploadCSV.fields([
@@ -73,16 +70,21 @@ router.post(
             let idSesionCreada;
 
             if (idSesion) {
+                // se suma a lo que ya tenía la sesión, no se reemplaza (para cuando se reanuda una sesión incompleta)
+                const [sesionPrevia] = await connection.query(
+                    'SELECT duracion_total_seg, csv_ruta FROM sesiones_paciente WHERE id_sesion = ?', [idSesion]
+                );
+                const duracionAcumulada = (sesionPrevia[0]?.duracion_total_seg || 0) + duracionTotalNum;
+                const csvRutaFinal = rutaCSVParaBD || sesionPrevia[0]?.csv_ruta || null;
+
                 const sqlUpdate = `UPDATE sesiones_paciente SET 
                 paciente_id = ?, dispositivo_id = ?, nombre_paciente = ?, 
-                duracion_total_seg = ?, total_pruebas = ?, 
-                avg_alpha = ?, avg_beta = ?, avg_theta = ?, csv_ruta = ?, interrupcion_conexion = ?
+                duracion_total_seg = ?, csv_ruta = ?, interrupcion_conexion = ?
                 WHERE id_sesion = ?`;
 
                 await connection.query(sqlUpdate, [
                     pacienteId, dispositivoId, nombrePaciente,
-                    duracionTotalNum, totalPruebasNum, avgAlphaNum, avgBetaNum, avgThetaNum,
-                    rutaCSVParaBD, interrupcionConexionNum, idSesion
+                    duracionAcumulada, csvRutaFinal, interrupcionConexionNum, idSesion
                 ]);
 
                 idSesionCreada = idSesion;
@@ -105,7 +107,7 @@ router.post(
                     const sqlDetalle = `INSERT INTO detalles_pruebas_sesion 
                         (sesion_id, nombre_prueba, segundo_inicio, duracion_neta_seg, avg_theta, avg_alpha, avg_beta, csv_ruta) VALUES ?`;
 
-                    // Cada prueba se empareja con su CSV por posición en el arreglo 
+                    // Cada prueba se empareja con su CSV por posición en el arreglo
                     const valoresDetalle = detalles.map((p, i) => {
                         const archivoDeEstaPrueba = archivosCSVPruebas[i] || null;
                         const rutaCSVPrueba = archivoDeEstaPrueba ? `uploads/${archivoDeEstaPrueba.filename}` : null;
@@ -124,6 +126,18 @@ router.post(
                     await connection.query(sqlDetalle, [valoresDetalle]);
                 }
             }
+
+            // total_pruebas y promedios se recalculan desde detalles_pruebas_sesion,
+            // así quedan correctos aunque la sesión se haya completado en varias partes
+            await connection.query(
+                `UPDATE sesiones_paciente s SET
+                    total_pruebas = (SELECT COUNT(*) FROM detalles_pruebas_sesion WHERE sesion_id = ?),
+                    avg_alpha = (SELECT AVG(avg_alpha) FROM detalles_pruebas_sesion WHERE sesion_id = ?),
+                    avg_beta = (SELECT AVG(avg_beta) FROM detalles_pruebas_sesion WHERE sesion_id = ?),
+                    avg_theta = (SELECT AVG(avg_theta) FROM detalles_pruebas_sesion WHERE sesion_id = ?)
+                WHERE s.id_sesion = ?`,
+                [idSesionCreada, idSesionCreada, idSesionCreada, idSesionCreada, idSesionCreada]
+            );
 
             if (evolucionBandas) {
                 const datosEvolucion = typeof evolucionBandas === 'string' ? evolucionBandas : JSON.stringify(evolucionBandas);
@@ -175,6 +189,94 @@ router.get('/historial-paciente/:id', async (req, res) => {
         manejarErrorServidor(res, error, 'GET /api/historial-paciente/:id');
     }
 });
+
+// Compara las pruebas asignadas al paciente contra las que ya tiene esta
+// sesión, para saber si quedó incompleta y con cuáles se debe reanudar
+router.get('/sesiones/:id/pruebas-faltantes', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [sesionRows] = await pool.query(
+            'SELECT paciente_id FROM sesiones_paciente WHERE id_sesion = ?', [id]
+        );
+        if (sesionRows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
+        const pacienteId = sesionRows[0].paciente_id;
+
+        const [asignadasRows] = await pool.query(
+            `SELECT p.id, p.nombre FROM pruebas p
+             JOIN paciente_prueba pp ON pp.prueba_id = p.id
+             WHERE pp.paciente_id = ?`, [pacienteId]
+        );
+
+        const [hechasRows] = await pool.query(
+            'SELECT DISTINCT nombre_prueba FROM detalles_pruebas_sesion WHERE sesion_id = ?', [id]
+        );
+        const nombresHechos = hechasRows.map(r => r.nombre_prueba);
+
+        const pruebasFaltantes = asignadasRows.filter(p => !nombresHechos.includes(p.nombre));
+
+        res.status(200).json({
+            completa: pruebasFaltantes.length === 0,
+            pacienteId,
+            pruebasFaltantes,
+            totalAsignadas: asignadasRows.length,
+            totalHechas: nombresHechos.length
+        });
+    } catch (error) {
+        manejarErrorServidor(res, error, 'GET /api/sesiones/:id/pruebas-faltantes');
+    }
+});
+
+// Junta el CSV principal + el de cada prueba de una sesión en un solo
+// archivo descargable
+router.get('/sesiones/:id/descargar-csv-completo', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [sesionRows] = await pool.query(
+            'SELECT csv_ruta FROM sesiones_paciente WHERE id_sesion = ?', [id]
+        );
+        if (sesionRows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
+
+        const [detallesRows] = await pool.query(
+            `SELECT nombre_prueba, csv_ruta FROM detalles_pruebas_sesion 
+             WHERE sesion_id = ? AND csv_ruta IS NOT NULL ORDER BY segundo_inicio ASC`, [id]
+        );
+
+        const rutasParaJuntar = [];
+        if (sesionRows[0].csv_ruta) rutasParaJuntar.push(sesionRows[0].csv_ruta);
+        detallesRows.forEach(d => rutasParaJuntar.push(d.csv_ruta));
+
+        if (rutasParaJuntar.length === 0) {
+            return res.status(404).json({ error: 'No hay archivos CSV guardados para esta sesión' });
+        }
+
+        let encabezado = null;
+        const bloques = [];
+
+        for (const ruta of rutasParaJuntar) {
+            const rutaCompleta = path.join(RAIZ_PROYECTO, ruta);
+            if (!fs.existsSync(rutaCompleta)) continue;
+
+            const contenido = fs.readFileSync(rutaCompleta, 'utf-8').replace(/^\uFEFF/, '');
+            const lineas = contenido.split('\n').filter(l => l.trim() !== '');
+            if (lineas.length === 0) continue;
+
+            if (!encabezado) encabezado = lineas[0];
+            bloques.push(...lineas.slice(1));
+        }
+
+        if (!encabezado) return res.status(404).json({ error: 'Los archivos CSV de esta sesión no se encontraron en el servidor' });
+
+        const csvFinal = "\ufeff" + [encabezado, ...bloques].join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="EEG_sesion_${id}_completa.csv"`);
+        res.send(csvFinal);
+    } catch (error) {
+        manejarErrorServidor(res, error, 'GET /api/sesiones/:id/descargar-csv-completo');
+    }
+});
+
 
 router.get('/sesiones/:id/evolucion', async (req, res) => {
     try {

@@ -1,4 +1,4 @@
-import { API_BASE, idPacienteURL, idMuseURL } from './state.js';
+import { API_BASE, idPacienteURL, idMuseURL, idSesionResumirURL } from './state.js';
 
 // Pruebas asignadas al paciente (primero se lee de la URL, luego se confirma con la BD)
 const urlParams = new URLSearchParams(window.location.search);
@@ -82,14 +82,13 @@ export async function sincronizarPaciente() {
         if (document.getElementById("sesion-id")) document.getElementById("sesion-id").innerText = `#${p.id}`;
         if (document.getElementById("sesion-edad")) document.getElementById("sesion-edad").innerText = `${p.edad} años`;
 
-        // p.pruebas_ids es la fuente de verdad real (no la URL, que puede estar vieja)
-        if (Array.isArray(p.pruebas_ids)) {
+        if (Array.isArray(p.pruebas_ids) && !idSesionResumirURL) {
             pruebasAsignadasURL = p.pruebas_ids.map(id => id.toString());
-            pintarPruebasAsignadas();
-            cargarCatalogoPruebas();
-            const elTotalPruebas = document.getElementById('sesion-total-pruebas');
-            if (elTotalPruebas) elTotalPruebas.innerText = pruebasAsignadasURL.length;
         }
+        pintarPruebasAsignadas();
+        cargarCatalogoPruebas();
+        const elTotalPruebas = document.getElementById('sesion-total-pruebas');
+        if (elTotalPruebas) elTotalPruebas.innerText = pruebasAsignadasURL.length;
 
         // Trae el último diagnóstico del paciente
         const badgeDiagnostico = document.getElementById("sesion-diagnostico");
