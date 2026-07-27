@@ -68,13 +68,17 @@ router.post(
             await connection.beginTransaction();
 
             let idSesionCreada;
+            let duracionPrevia = 0; // segundos que ya tenía la sesión ANTES de esta parte (0 si es sesión nueva)
+            let datosGraficaPrevios = null;
 
             if (idSesion) {
                 // se suma a lo que ya tenía la sesión, no se reemplaza (para cuando se reanuda una sesión incompleta)
                 const [sesionPrevia] = await connection.query(
-                    'SELECT duracion_total_seg, csv_ruta FROM sesiones_paciente WHERE id_sesion = ?', [idSesion]
+                    'SELECT duracion_total_seg, csv_ruta, datos_grafica FROM sesiones_paciente WHERE id_sesion = ?', [idSesion]
                 );
-                const duracionAcumulada = (sesionPrevia[0]?.duracion_total_seg || 0) + duracionTotalNum;
+                duracionPrevia = sesionPrevia[0]?.duracion_total_seg || 0;
+                datosGraficaPrevios = sesionPrevia[0]?.datos_grafica || null;
+                const duracionAcumulada = duracionPrevia + duracionTotalNum;
                 const csvRutaFinal = rutaCSVParaBD || sesionPrevia[0]?.csv_ruta || null;
 
                 const sqlUpdate = `UPDATE sesiones_paciente SET 
@@ -107,7 +111,6 @@ router.post(
                     const sqlDetalle = `INSERT INTO detalles_pruebas_sesion 
                         (sesion_id, nombre_prueba, segundo_inicio, duracion_neta_seg, avg_theta, avg_alpha, avg_beta, csv_ruta) VALUES ?`;
 
-                    // Cada prueba se empareja con su CSV por posición en el arreglo
                     const valoresDetalle = detalles.map((p, i) => {
                         const archivoDeEstaPrueba = archivosCSVPruebas[i] || null;
                         const rutaCSVPrueba = archivoDeEstaPrueba ? `uploads/${archivoDeEstaPrueba.filename}` : null;
@@ -115,7 +118,7 @@ router.post(
                         return [
                             idSesionCreada,
                             p.nombre,
-                            numeroSeguro(p.inicioRelativo),
+                            numeroSeguro(p.inicioRelativo) + duracionPrevia,
                             numeroSeguro(p.duracionNeto),
                             numeroSeguro(p.avgTheta),
                             numeroSeguro(p.avgAlpha),
@@ -140,8 +143,23 @@ router.post(
             );
 
             if (evolucionBandas) {
-                const datosEvolucion = typeof evolucionBandas === 'string' ? evolucionBandas : JSON.stringify(evolucionBandas);
-                await connection.query('UPDATE sesiones_paciente SET datos_grafica = ? WHERE id_sesion = ?', [datosEvolucion, idSesionCreada]);
+                let puntosNuevos = typeof evolucionBandas === 'string' ? JSON.parse(evolucionBandas) : evolucionBandas;
+
+                if (duracionPrevia > 0) {
+                    puntosNuevos = puntosNuevos.map(p => ({ ...p, t: parseFloat(p.t) + duracionPrevia }));
+                }
+
+                let puntosFinales = puntosNuevos;
+                if (datosGraficaPrevios) {
+                    const datosPrevios = typeof datosGraficaPrevios === 'string'
+                        ? JSON.parse(datosGraficaPrevios)
+                        : datosGraficaPrevios;
+                    // Se concatena con lo que ya había en vez de sobrescribir, si no, cada vez que se
+                    // reanuda una sesión se perdía la gráfica de las pruebas ya guardadas
+                    puntosFinales = [...datosPrevios, ...puntosNuevos];
+                }
+
+                await connection.query('UPDATE sesiones_paciente SET datos_grafica = ? WHERE id_sesion = ?', [JSON.stringify(puntosFinales), idSesionCreada]);
             }
 
             await connection.commit();
@@ -352,7 +370,7 @@ router.delete('/sesiones/:id', async (req, res) => {
             ];
 
             rutasABorrar.forEach((ruta) => {
-                const rutaCompleta = path.join(RAIZ_PROYECTO, ruta); // ya no está dentro de public/, ahora vive directo en uploads/
+                const rutaCompleta = path.join(RAIZ_PROYECTO, ruta); 
                 fs.unlink(rutaCompleta, (err) => {
                     if (err) console.error('⚠️ No se pudo borrar el CSV físico:', rutaCompleta, err.message);
                 });

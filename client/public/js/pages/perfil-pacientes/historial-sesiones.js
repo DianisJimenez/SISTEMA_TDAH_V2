@@ -69,7 +69,7 @@ async function revisarSiFaltanPruebas(idSesion, dispositivoId, btnReanudar) {
         if (data.completa || !data.pruebasFaltantes?.length) return;
 
         const idsFaltantes = data.pruebasFaltantes.map(p => p.id).join(',');
-        btnReanudar.classList.remove('d-none');
+        btnReanudar.classList.remove('invisible');
         btnReanudar.title = `Reanudar sesión (faltan: ${data.pruebasFaltantes.map(p => p.nombre).join(', ')})`;
         btnReanudar.addEventListener('click', () => {
             const dev = dispositivoId ? `&dev=${dispositivoId}` : '';
@@ -128,7 +128,7 @@ document.getElementById('btnGuardarPronostico').addEventListener('click', async 
 });
 
 // Guarda el diagnóstico de una sesión específica (lo pone el médico a mano
-// por ahora). No recarga toda la tabla, solo avisa si algo falló
+// por ahora) No recarga toda la tabla, solo avisa si algo falló
 async function guardarDiagnosticoSesion(sesion, diagnostico) {
     try {
         const res = await fetch(`/api/sesiones/${sesion.id_sesion}/diagnostico`, {
