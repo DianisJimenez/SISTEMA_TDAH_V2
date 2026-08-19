@@ -15,8 +15,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "muse-js": "^3.3.0",
-    "three": "^0.183.2",
-    "web-muse": "github:itayinbarr/web-muse"
+    "three": "^0.183.2"
   },
   "devDependencies": {
     "vite": "^6.0.0"

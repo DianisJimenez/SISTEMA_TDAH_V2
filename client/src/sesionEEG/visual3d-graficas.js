@@ -35,7 +35,7 @@ export function initThreeJS() {
     const ambientLight = new THREE.AmbientLight(0xcccccc, 1);
     scene.add(ambientLight);
 
-    // Carga el archivo .glb y centra/escala el modelo
+    // Carga el modelo 3D y lo centra en la escena
     const loader = new GLTFLoader();
     loader.load('assets/head.glb', (gltf) => {
         head = new THREE.Group();
@@ -77,7 +77,7 @@ export function initThreeJS() {
     });
 }
 
-// Loop de animación: rota la cabeza según acelerómetro/giroscopio en vivo
+// Mueve la cabeza en tiempo real según el acelerómetro y giroscopio
 function animate() {
     requestAnimationFrame(animate);
     if (head) {
@@ -86,12 +86,13 @@ function animate() {
         if (magnitude > 0) {
             const roll = Math.atan2(accelY, accelZ);
             const pitch = Math.atan2(accelX, Math.sqrt(accelY * accelY + accelZ * accelZ));
-            rotX = rotX * 0.02 + pitch * 0.98;
-            rotY = rotY * 0.02 + roll * 0.98;
+            // suaviza el movimiento para que no tiemble
+            rotX = rotX * 0.98 + pitch * 0.02;
+            rotY = rotY * 0.98 + roll * 0.02;
         }
-        rotZ = rotZ * 0.02 + (gyroZ * gyroSensitivity) * 0.98;
+        rotZ = rotZ * 0.98 + (gyroZ * gyroSensitivity) * 0.02;
 
-        // Limita la rotación para que no dé vueltas irreales
+        // Limita cuánto puede girar la cabeza
         rotX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, rotX));
         rotY = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, rotY));
         rotZ = Math.max(-Math.PI / 1.5, Math.min(Math.PI / 1.5, rotZ));
@@ -103,9 +104,9 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-const LIVE_WINDOW_SECONDS = 90; // ventana deslizante de la vista "en vivo"
+const LIVE_WINDOW_SECONDS = 90; // cuántos segundos se ven en la vista en vivo
 
-// Buffer de los 4 canales que alimenta el osciloscopio en vivo
+// Buffer de los 4 canales para el osciloscopio en vivo
 export const eegDataBuffer = {
     tp9: Array(100).fill(0),
     af7: Array(100).fill(0),
@@ -113,17 +114,14 @@ export const eegDataBuffer = {
     tp10: Array(100).fill(0)
 };
 
-// Historial COMPLETO de bandas theta/alpha/beta desde que arrancó el reloj
-// vigente (liveState.chartStartTime). Cada punto es {x: segundos, y: valor}
-// y nunca se recorta: de aquí se alimentan tanto la vista en vivo (ventana
-// de 90s) como "Ver sesión completa".
+// Historial completo de bandas de toda la sesión, se usa tanto en vivo como en "sesión completa"
 export const chartData = { theta: [], alpha: [], beta: [] };
 
 let bandChart, eegChart;
 let viewMode = 'live'; // 'live' | 'full'
 let toggleBtn = null;
 
-// Crea el osciloscopio (señal cruda filtrada, 4 canales)
+// Crea el osciloscopio de señal cruda, 4 canales
 export function initEEGChart() {
     const ctx = document.getElementById("eegChart").getContext("2d");
     eegChart = new Chart(ctx, {
@@ -164,9 +162,7 @@ export function initChart() {
             interaction: { mode: 'index', intersect: false },
             scales: {
                 y: { beginAtZero: true },
-                // Escala LINEAL real (segundos verdaderos), no por índice/label.
-                // Esto es lo que permite que los marcadores y los datos siempre
-                // compartan el mismo número, en vivo o en "sesión completa".
+                // El eje X usa segundos reales, así los marcadores y los datos siempre coinciden
                 x: {
                     type: 'linear',
                     min: 0,
@@ -185,10 +181,10 @@ export function initChart() {
                         label: (context) => ` ${context.dataset.label}: ${context.parsed.y.toFixed(2)} µV`
                     }
                 },
-                // Aquí viven las líneas de "Inicio"/"Fin" de cada prueba
+                // Aquí se guardan las líneas de inicio/fin de cada prueba
                 annotation: { annotations: {} }
             },
-            // Clic sobre la gráfica: muestra en qué segundo se dio clic
+            // Muestra en qué segundo se hizo clic
             onClick: (e) => {
                 const points = bandChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
                 if (points.length) {
@@ -203,7 +199,7 @@ export function initChart() {
     ensureToggleButton();
 }
 
-// Agrega un nuevo punto theta/alpha/beta a la gráfica de evolución
+// Agrega un nuevo punto theta/alpha/beta a la gráfica
 export function updateChart(theta, alpha, beta) {
     const segundoActual = (Date.now() - liveState.chartStartTime) / 1000;
 
@@ -217,7 +213,7 @@ export function updateChart(theta, alpha, beta) {
     bandChart.update('none');
 }
 
-// Calcula y aplica la ventana deslizante de los últimos LIVE_WINDOW_SECONDS
+// Mueve la ventana visible para mostrar siempre los últimos segundos
 function aplicarVentanaEnVivo(segundoActual) {
     if (segundoActual <= LIVE_WINDOW_SECONDS) {
         bandChart.options.scales.x.min = 0;
@@ -228,9 +224,7 @@ function aplicarVentanaEnVivo(segundoActual) {
     }
 }
 
-// Alterna entre la vista "en vivo" (ventana deslizante de 90s) y
-// "Ver sesión completa" (todo el timeline desde el segundo 0, con todas
-// las líneas de inicio/fin de prueba visibles a la vez)
+// Cambia entre ver los últimos segundos o toda la sesión completa
 export function setViewMode(modo) {
     viewMode = modo;
     const ultimoPunto = chartData.theta[chartData.theta.length - 1];
@@ -245,10 +239,7 @@ export function setViewMode(modo) {
     bandChart.update();
 }
 
-// Engancha el botón "Ver sesión completa" (id="toggleVistaSesion").
-// Si ya existe en el HTML lo usa tal cual (con tus estilos); si no existe,
-// lo crea junto al canvas de bandChart como respaldo. En ambos casos le
-// engancha el mismo comportamiento de toggle.
+// Crea o reutiliza el botón "Ver sesión completa" y le pone el toggle
 function ensureToggleButton() {
     if (toggleBtn) return;
 
@@ -275,9 +266,7 @@ function ensureToggleButton() {
     };
 }
 
-// Dibuja una línea vertical en la gráfica marcando inicio/fin de una prueba.
-// Se posiciona en el segundo EXACTO en el mismo reloj que usan los datos
-// (liveState.chartStartTime)
+// Dibuja la línea vertical de inicio/fin de una prueba en el segundo exacto
 export function dibujarMarcador(id, texto, color) {
     const segundoExacto = (Date.now() - liveState.chartStartTime) / 1000;
 
@@ -305,9 +294,7 @@ export function dibujarMarcador(id, texto, color) {
     bandChart.update();
 }
 
-// Limpia la gráfica de bandas: se usa al conectar el dispositivo (vista de
-// calibración) y de nuevo al presionar "Iniciar sesión" para que el
-// segundo 0 real arranque completamente limpio y vuelva a vista en vivo.
+// Limpia la gráfica y la deja lista para arrancar una sesión nueva
 export function resetChartData() {
     chartData.theta.length = 0;
     chartData.alpha.length = 0;

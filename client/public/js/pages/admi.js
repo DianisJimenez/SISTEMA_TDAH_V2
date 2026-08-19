@@ -224,13 +224,16 @@
                         const dispositivos = await response.json();
                         let html = "";
                         dispositivos.forEach(d => {
-                            const imgPath = d.foto_url ? `/${d.foto_url}` : 'uploads/muse.png';
+                            const imgHtml = d.foto_url
+                                ? `<img src="/${d.foto_url}" onerror="this.replaceWith(Object.assign(document.createElement('i'), {className:'ri-bluetooth-line device-img-fallback'}))" alt="${d.nombre}">`
+                                : `<i class="ri-bluetooth-line device-img-fallback"></i>`;
+
                             html += `
                                 <div class="col-md-4">
                                   <div class="card device-card-clinical shadow-sm border-0">
                                     <div class="card-body d-flex align-items-center p-3">
                                       <div class="device-img-container me-3">
-                                          <img src="${imgPath}" onerror="this.src='uploads/muse.png'" alt="${d.nombre}">
+                                          ${imgHtml}
                                       </div>
                                       <div class="flex-grow-1">
                                         <h6 class="mb-0 fw-bold">${d.nombre}</h6>

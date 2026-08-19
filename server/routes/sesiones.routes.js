@@ -48,11 +48,27 @@ router.post(
         const {
             idSesion, pacienteId, dispositivoId, nombrePaciente,
             duracionTotal, totalPruebas, avgAlpha, avgBeta, avgTheta,
-            pruebasDetalle, evolucionBandas, interrupcionConexion
+            pruebasDetalle, evolucionBandas, interrupcionConexion,
+            indicesCSVPruebas //posición en archivos_csv_pruebas, mandado por el frontend corregido
         } = req.body;
 
         const archivoCSVSesion = req.files?.archivo_csv?.[0] || null;
         const archivosCSVPruebas = req.files?.archivos_csv_pruebas || [];
+
+        let mapaIndiceArchivo = null;
+        if (indicesCSVPruebas) {
+            try {
+                const indices = typeof indicesCSVPruebas === 'string'
+                    ? JSON.parse(indicesCSVPruebas)
+                    : indicesCSVPruebas;
+                mapaIndiceArchivo = new Map();
+                indices.forEach((idxReal, posicionEnArchivos) => {
+                    mapaIndiceArchivo.set(idxReal, archivosCSVPruebas[posicionEnArchivos]);
+                });
+            } catch (e) {
+                console.error('No se pudo parsear indicesCSVPruebas:', e);
+            }
+        }
 
         const rutaCSVParaBD = archivoCSVSesion ? `uploads/${archivoCSVSesion.filename}` : null;
 
@@ -112,7 +128,11 @@ router.post(
                         (sesion_id, nombre_prueba, segundo_inicio, duracion_neta_seg, avg_theta, avg_alpha, avg_beta, csv_ruta) VALUES ?`;
 
                     const valoresDetalle = detalles.map((p, i) => {
-                        const archivoDeEstaPrueba = archivosCSVPruebas[i] || null;
+                        // ANTES asumía posición == índice, se desalineaba si el frontend saltaba una prueba sin CSV
+                        const archivoDeEstaPrueba = mapaIndiceArchivo
+                            ? (mapaIndiceArchivo.get(i) || null)
+                            : (archivosCSVPruebas[i] || null); 
+
                         const rutaCSVPrueba = archivoDeEstaPrueba ? `uploads/${archivoDeEstaPrueba.filename}` : null;
 
                         return [
@@ -130,8 +150,7 @@ router.post(
                 }
             }
 
-            // total_pruebas y promedios se recalculan desde detalles_pruebas_sesion,
-            // así quedan correctos aunque la sesión se haya completado en varias partes
+            // total_pruebas y promedios se recalculan desde detalles_pruebas_sesion para quedar correctos aunque la sesión se haya completado en varias partes
             await connection.query(
                 `UPDATE sesiones_paciente s SET
                     total_pruebas = (SELECT COUNT(*) FROM detalles_pruebas_sesion WHERE sesion_id = ?),
@@ -154,8 +173,7 @@ router.post(
                     const datosPrevios = typeof datosGraficaPrevios === 'string'
                         ? JSON.parse(datosGraficaPrevios)
                         : datosGraficaPrevios;
-                    // Se concatena con lo que ya había en vez de sobrescribir, si no, cada vez que se
-                    // reanuda una sesión se perdía la gráfica de las pruebas ya guardadas
+                    // Se concatena con lo previo en vez de sobrescribir, para no perder la gráfica al reanudar sesión
                     puntosFinales = [...datosPrevios, ...puntosNuevos];
                 }
 
@@ -208,8 +226,7 @@ router.get('/historial-paciente/:id', async (req, res) => {
     }
 });
 
-// Compara las pruebas asignadas al paciente contra las que ya tiene esta
-// sesión, para saber si quedó incompleta y con cuáles se debe reanudar
+// Compara las pruebas asignadas contra las que ya tiene esta sesión, para saber si quedó incompleta
 router.get('/sesiones/:id/pruebas-faltantes', async (req, res) => {
     try {
         const { id } = req.params;
@@ -245,8 +262,7 @@ router.get('/sesiones/:id/pruebas-faltantes', async (req, res) => {
     }
 });
 
-// Junta el CSV principal + el de cada prueba de una sesión en un solo
-// archivo descargable
+// Junta el CSV principal + el de cada prueba de una sesión en un solo archivo descargable
 router.get('/sesiones/:id/descargar-csv-completo', async (req, res) => {
     try {
         const { id } = req.params;
@@ -261,9 +277,13 @@ router.get('/sesiones/:id/descargar-csv-completo', async (req, res) => {
              WHERE sesion_id = ? AND csv_ruta IS NOT NULL ORDER BY segundo_inicio ASC`, [id]
         );
 
+        // el CSV de sesión si existe, si no los individuales por prueba
         const rutasParaJuntar = [];
-        if (sesionRows[0].csv_ruta) rutasParaJuntar.push(sesionRows[0].csv_ruta);
-        detallesRows.forEach(d => rutasParaJuntar.push(d.csv_ruta));
+        if (sesionRows[0].csv_ruta) {
+            rutasParaJuntar.push(sesionRows[0].csv_ruta);
+        } else {
+            detallesRows.forEach(d => { if (d.csv_ruta) rutasParaJuntar.push(d.csv_ruta); });
+        }
 
         if (rutasParaJuntar.length === 0) {
             return res.status(404).json({ error: 'No hay archivos CSV guardados para esta sesión' });
@@ -281,7 +301,9 @@ router.get('/sesiones/:id/descargar-csv-completo', async (req, res) => {
             if (lineas.length === 0) continue;
 
             if (!encabezado) encabezado = lineas[0];
-            bloques.push(...lineas.slice(1));
+            for (let i = 1; i < lineas.length; i++) {
+                bloques.push(lineas[i]);
+            }
         }
 
         if (!encabezado) return res.status(404).json({ error: 'Los archivos CSV de esta sesión no se encontraron en el servidor' });
@@ -372,7 +394,7 @@ router.delete('/sesiones/:id', async (req, res) => {
             rutasABorrar.forEach((ruta) => {
                 const rutaCompleta = path.join(RAIZ_PROYECTO, ruta); 
                 fs.unlink(rutaCompleta, (err) => {
-                    if (err) console.error('⚠️ No se pudo borrar el CSV físico:', rutaCompleta, err.message);
+                    if (err) console.error('No se pudo borrar el CSV físico:', rutaCompleta, err.message);
                 });
             });
 

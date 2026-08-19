@@ -1,52 +1,96 @@
 import FFT from "fft.js";
 
-// Filtro notch (elimina el ruido eléctrico de 50Hz)
-const notch50 = {
-    b0: 0.9565, b1: -1.1822, b2: 0.9565,
-    a1: -1.1822, a2: 0.9131,
-    v1: { tp9: 0, af7: 0, af8: 0, tp10: 0 },
-    v2: { tp9: 0, af7: 0, af8: 0, tp10: 0 }
-};
-
-// Filtro pasa-altas (quita el offset/deriva de la señal)
-const highPass05 = {
-    alpha: 0.9878,
-    prevRaw: { tp9: 0, af7: 0, af8: 0, tp10: 0 },
-    prevFilt: { tp9: 0, af7: 0, af8: 0, tp10: 0 }
-};
-
-// Reinicia la memoria de los filtros (se llama al conectar / iniciar sesión)
-export function resetearFiltros() {
-    notch50.v1 = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
-    notch50.v2 = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
-    highPass05.prevRaw = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
-    highPass05.prevFilt = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
-}
-
-// Aplica notch + pasa-altas a una muestra de un canal
-export function applyFilters(rawData, channelKey) {
-    let x = rawData;
-    let v = x - notch50.a1 * notch50.v1[channelKey] - notch50.a2 * notch50.v2[channelKey];
-    let yNotch = notch50.b0 * v + notch50.b1 * notch50.v1[channelKey] + notch50.b2 * notch50.v2[channelKey];
-    notch50.v2[channelKey] = notch50.v1[channelKey];
-    notch50.v1[channelKey] = v;
-
-    let yHP = highPass05.alpha * (highPass05.prevFilt[channelKey] + yNotch - highPass05.prevRaw[channelKey]);
-    highPass05.prevRaw[channelKey] = yNotch;
-    highPass05.prevFilt[channelKey] = yHP;
-
-    return yHP;
-}
-
 export const sampleRate = 256;
 export const bufferSize = 256; // 1 segundo de datos por ventana de análisis
 
-// Traslape de ventanas: cada cálculo reutiliza la mitad de la ventana anterior
+// Frecuencia de la red eléctrica, México usa 60Hz, en Europa sería 50
+export const MAINS_FREQUENCY = 60;
+
+// Notch biquad (RBJ) para eliminar el ruido de la red eléctrica
+function disenarNotch(f0, Q, fs) {
+    const w0 = 2 * Math.PI * f0 / fs;
+    const alpha = Math.sin(w0) / (2 * Q);
+    const a0 = 1 + alpha;
+    return {
+        b0: 1 / a0,
+        b1: -2 * Math.cos(w0) / a0,
+        b2: 1 / a0,
+        a1: -2 * Math.cos(w0) / a0,
+        a2: (1 - alpha) / a0,
+    };
+}
+
+// Pasa-altas de un polo (DC blocker) para quitar el offset/deriva de la señal
+function disenarPasaAltas(fc, fs) {
+    return Math.exp(-2 * Math.PI * fc / fs);
+}
+
+// Pasa-bajas de un polo para limitar el ancho de banda antes del FFT
+function disenarPasaBajas(fc, fs) {
+    const w0 = 2 * Math.PI * fc / fs;
+    const b = 2 * Math.cos(w0) - 4;
+    const disc = b * b - 4;
+    const a = (-b - Math.sqrt(disc)) / 2;
+    return 1 - a;
+}
+
+const NOTCH_Q = 30; // qué tan angosto es el notch, más alto = más angosto
+const notch = {
+    ...disenarNotch(MAINS_FREQUENCY, NOTCH_Q, sampleRate),
+    v1: { tp9: 0, af7: 0, af8: 0, tp10: 0 },
+    v2: { tp9: 0, af7: 0, af8: 0, tp10: 0 },
+};
+
+const highPass05 = {
+    alpha: disenarPasaAltas(0.5, sampleRate),
+    prevRaw: { tp9: 0, af7: 0, af8: 0, tp10: 0 },
+    prevFilt: { tp9: 0, af7: 0, af8: 0, tp10: 0 },
+};
+
+const lowPass45 = {
+    alpha: disenarPasaBajas(45, sampleRate),
+    prev: { tp9: 0, af7: 0, af8: 0, tp10: 0 },
+};
+
+// Reinicia la memoria de los filtros, se llama al conectar o iniciar sesión
+export function resetearFiltros() {
+    notch.v1 = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
+    notch.v2 = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
+    highPass05.prevRaw = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
+    highPass05.prevFilt = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
+    lowPass45.prev = { tp9: 0, af7: 0, af8: 0, tp10: 0 };
+}
+
+// Limpia la señal de un canal: quita offset, ruido eléctrico y frecuencias altas
+export function applyFilters(rawData, channelKey) {
+    // 1) quita el offset
+    const x = rawData;
+    const yHP = highPass05.alpha * (highPass05.prevFilt[channelKey] + x - highPass05.prevRaw[channelKey]);
+    highPass05.prevRaw[channelKey] = x;
+    highPass05.prevFilt[channelKey] = yHP;
+
+    // 2) quita el ruido de la red eléctrica
+    const v = yHP - notch.a1 * notch.v1[channelKey] - notch.a2 * notch.v2[channelKey];
+    const yNotch = notch.b0 * v + notch.b1 * notch.v1[channelKey] + notch.b2 * notch.v2[channelKey];
+    notch.v2[channelKey] = notch.v1[channelKey];
+    notch.v1[channelKey] = v;
+
+    // 3) limita el ancho de banda
+    const yLP = lowPass45.prev[channelKey] + lowPass45.alpha * (yNotch - lowPass45.prev[channelKey]);
+    lowPass45.prev[channelKey] = yLP;
+
+    return yLP;
+}
+
+// Cada cálculo reutiliza la mitad de la ventana anterior
 const windowOverlap = 0.5;
 export const stepSize = Math.floor(bufferSize * (1 - windowOverlap));
 
-// Umbrales para detectar artefactos (parpadeos, movimiento brusco)
-const UMBRAL_AMPLITUD_UV = 150;
+// Compensa la pérdida de energía que causa la ventana de Hanning
+const GANANCIA_HANNING = 0.5;
+
+// Umbrales por defecto, se usan solo si aún no hay calibración por sujeto
+const UMBRAL_AMPLITUD_UV_DEFECTO = 150;
 const UMBRAL_ACEL_G = 0.35;
 
 // Suaviza la señal antes del FFT para evitar distorsión entre frecuencias
@@ -71,7 +115,6 @@ export function computeBands(signal) {
     let theta = 0, alpha = 0, beta = 0;
     let countT = 0, countA = 0, countB = 0;
 
-    // Recorre cada frecuencia calculada y la clasifica en su banda
     for (let i = 0; i < bufferSize / 2; i++) {
         const re = out[2 * i];
         const im = out[2 * i + 1];
@@ -79,18 +122,16 @@ export function computeBands(signal) {
         const freq = i * sampleRate / bufferSize;
 
         if (freq < 0.16 || freq > 40) continue;
-        if (Math.abs(freq - 50) < 1 || Math.abs(freq - 60) < 1) continue; // descarta ruido eléctrico
 
         if (freq >= 4 && freq < 8) { theta += mag; countT++; }
         if (freq >= 8 && freq < 13) { alpha += mag; countA++; }
         if (freq >= 13 && freq <= 30) { beta += mag; countB++; }
     }
 
-    const avgTheta = countT > 0 ? theta / countT : 0;
-    const avgAlpha = countA > 0 ? alpha / countA : 0;
-    const avgBeta = countB > 0 ? beta / countB : 0;
+    const avgTheta = (countT > 0 ? theta / countT : 0) / GANANCIA_HANNING;
+    const avgAlpha = (countA > 0 ? alpha / countA : 0) / GANANCIA_HANNING;
+    const avgBeta = (countB > 0 ? beta / countB : 0) / GANANCIA_HANNING;
 
-    // Convierte energía absoluta a porcentaje relativo para la gráfica
     const totalEnergy = avgTheta + avgAlpha + avgBeta;
     const pctFactor = totalEnergy > 0 ? 100 / totalEnergy : 0;
 
@@ -100,15 +141,33 @@ export function computeBands(signal) {
     };
 }
 
-// Marca una muestra como "artefacto" si hay amplitud rara o movimiento brusco
-export function detectarArtefacto(valoresFiltrados, accelX, accelY, accelZ) {
-    const amplitudSospechosa = valoresFiltrados.some(v => Math.abs(v) > UMBRAL_AMPLITUD_UV);
+// Calcula el umbral de artefacto propio del sujeto usando los segundos en reposo
+export function calcularUmbralAmplitud(valoresCalibracionPorCanal) {
+    const todos = [
+        ...valoresCalibracionPorCanal.tp9,
+        ...valoresCalibracionPorCanal.af7,
+        ...valoresCalibracionPorCanal.af8,
+        ...valoresCalibracionPorCanal.tp10,
+    ];
+    if (todos.length < sampleRate) {
+        // muy pocos datos, se usa el valor por defecto
+        return UMBRAL_AMPLITUD_UV_DEFECTO;
+    }
+    const media = todos.reduce((a, b) => a + b, 0) / todos.length;
+    const varianza = todos.reduce((a, b) => a + (b - media) ** 2, 0) / todos.length;
+    const desviacion = Math.sqrt(varianza);
+    return media + 3 * desviacion;
+}
+
+// Marca una muestra como artefacto si hay amplitud rara o movimiento brusco
+export function detectarArtefacto(valoresFiltrados, accelX, accelY, accelZ, umbralAmplitud = UMBRAL_AMPLITUD_UV_DEFECTO) {
+    const amplitudSospechosa = valoresFiltrados.some(v => Math.abs(v) > umbralAmplitud);
     const magnitudAcel = Math.sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ);
     const movimientoSospechoso = Math.abs(magnitudAcel - 1) > UMBRAL_ACEL_G;
     return (amplitudSospechosa || movimientoSospechoso) ? 1 : 0;
 }
 
-// Promedia las bandas solo dentro del tramo de tiempo de una prueba específica
+// Promedia las bandas solo dentro del tramo de tiempo de una prueba
 export function promediarBandasEnRango(historial, inicioRelSeg, finRelSeg) {
     const puntos = historial.filter(p => {
         const t = parseFloat(p.t);

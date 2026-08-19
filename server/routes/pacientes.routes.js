@@ -86,7 +86,6 @@ router.post('/registrar-paciente', async (req, res) => {
             return res.status(400).json({ success: false, error: "La fecha de nacimiento es obligatoria." });
         }
 
-        // La fecha debe ser una fecha real y no puede ser futura
         const fechaNac = new Date(fecha_nacimiento);
         if (isNaN(fechaNac.getTime())) {
             return res.status(400).json({ success: false, error: "La fecha de nacimiento no es válida." });
@@ -102,13 +101,15 @@ router.post('/registrar-paciente', async (req, res) => {
             return res.status(400).json({ success: false, error: "El teléfono debe tener exactamente 10 dígitos." });
         }
         const edadNum = parseInt(edad);
-        // Rango razonable de edad humana; también cubre negativos
         if (isNaN(edadNum) || edadNum < 0 || edadNum > 120) {
             return res.status(400).json({ success: false, error: "La edad no es válida." });
         }
 
+        // Si viene vacía, se guarda como NULL: así MySQL no la choca contra el índice UNIQUE
+        const curpFinal = curp && curp.trim() ? curp.trim().toUpperCase() : null;
+
         const query = `INSERT INTO pacientes (nombre, edad, sexo, estado, fecha_registro, telefono, curp, fecha_nacimiento, tipo_sangre, medico_id, dispositivo_id) VALUES (?, ?, ?, 'Sin sesión', NOW(), ?, ?, ?, ?, ?, ?)`;
-        const [result] = await pool.query(query, [nombre, edadNum, sexo, telefono, curp ? curp.toUpperCase() : curp, fecha_nacimiento, tipo_sangre, medico_id, dispositivo_id || null]);
+        const [result] = await pool.query(query, [nombre, edadNum, sexo, telefono, curpFinal, fecha_nacimiento, tipo_sangre, medico_id, dispositivo_id || null]);
         res.status(200).json({ success: true, id: result.insertId });
     } catch (error) {
         // uq_pacientes_curp: ya existe un paciente con esa CURP
@@ -128,8 +129,6 @@ router.put('/pacientes/:id', async (req, res) => {
         const { id } = req.params;
         const { nombre, edad, sexo, curp, telefono, fecha_nacimiento, tipo_sangre, notas, medico_id, dispositivo_id } = req.body;
 
-        // Este formulario permite dejar la fecha vacía (perfil ya existente sin ese dato),
-        // pero si viene, tiene que ser una fecha real y no futura.
         if (fecha_nacimiento) {
             const fechaNac = new Date(fecha_nacimiento);
             if (isNaN(fechaNac.getTime())) {
@@ -146,11 +145,17 @@ router.put('/pacientes/:id', async (req, res) => {
             }
         }
 
-       
+        const curpFinal = curp && curp.trim() ? curp.trim().toUpperCase() : null;
+
         const query = `UPDATE pacientes SET nombre = ?, edad = ?, sexo = ?, curp = ?, telefono = ?, fecha_nacimiento = ?, tipo_sangre = ?, notas = COALESCE(?, notas), medico_id = ?, dispositivo_id = ? WHERE id = ?`;
-        await pool.query(query, [nombre, edad, sexo, curp, telefono, fecha_nacimiento, tipo_sangre, notas, medico_id || null, dispositivo_id || null, id]);
+        await pool.query(query, [nombre, edad, sexo, curpFinal, telefono, fecha_nacimiento, tipo_sangre, notas, medico_id || null, dispositivo_id || null, id]);
         res.json({ success: true, message: "Datos actualizados" });
-    } catch (error) { manejarErrorServidor(res, error, 'PUT /api/pacientes/:id'); }
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ success: false, error: "Ya existe un paciente registrado con esa CURP." });
+        }
+        manejarErrorServidor(res, error, 'PUT /api/pacientes/:id');
+    }
 });
 
 router.post('/pacientes/subir-foto', upload.single('foto'), async (req, res) => {

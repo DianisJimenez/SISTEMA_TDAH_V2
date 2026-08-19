@@ -73,7 +73,9 @@ async function verResumen(i) {
 
             const btnDescargarPrueba = fila.querySelector('.btn-descargar-csv-prueba');
             if (d.csv_ruta) {
-                btnDescargarPrueba.onclick = () => descargarArchivo(d.csv_ruta, `EEG_${s.id_sesion}_${d.nombre}.csv`);
+                const nombrePaciente = nombreArchivoValido($('#infoNombre').text());
+                const nombrePrueba = nombreArchivoValido(d.nombre);
+                btnDescargarPrueba.onclick = () => descargarArchivo(d.csv_ruta, `EEG_${nombrePaciente}_Sesion${s.id_sesion}_${nombrePrueba}.csv`);
             } else {
                 btnDescargarPrueba.disabled = true;
                 btnDescargarPrueba.title = 'Sin CSV individual para esta prueba';
@@ -128,8 +130,7 @@ async function verResumen(i) {
         });
     });
 
-    // Redibuja la gráfica si se cambia el tamaño de la ventana con el modal abierto.
-    // Con debounce para no repetir el bucle de temblor que arreglamos con responsive:false.
+    // Redibuja la gráfica si se cambia el tamaño de la ventana con el modal abierto
     $(window).off('resize.reporteGrafica').on('resize.reporteGrafica', function () {
         clearTimeout(window._resizeGraficaTimeout);
         window._resizeGraficaTimeout = setTimeout(() => dibujarGraficaDesdeJSON(s.id_sesion), 200);
@@ -161,7 +162,7 @@ async function verResumen(i) {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `EEG_Sesion_${s.id_sesion}_completa.csv`;
+            link.download = `EEG_${nombreArchivoValido($('#infoNombre').text())}_Sesion${s.id_sesion}.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -176,6 +177,15 @@ async function verResumen(i) {
     });
 }
 
+// Convierte un texto libre (nombre de paciente o de prueba) 
+function nombreArchivoValido(texto) {
+    return (texto || 'Paciente')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
+        .replace(/[^a-zA-Z0-9]+/g, '_') // reemplaza todo lo demás por "_"
+        .replace(/^_+|_+$/g, '') // quita "_" al inicio/final
+        .slice(0, 60) || 'Paciente'; // límite razonable de longitud
+}
+
 // Descarga cualquier archivo servido por el backend (usada tanto por el CSV de sesión como por el de cada prueba)
 function descargarArchivo(ruta, nombreDescarga) {
     const link = document.createElement('a');
@@ -186,7 +196,7 @@ function descargarArchivo(ruta, nombreDescarga) {
     document.body.removeChild(link);
 }
 
-// Modal del ícono 👁: gráfica EEG recortada solo al tramo de esa prueba (eje X arranca en 0 = inicio de la prueba)
+// Modal del ícono ojito  gráfica EEG recortada solo al tramo de esa prueba (eje X arranca en 0 = inicio de la prueba)
 async function verEEGPrueba(idSesion, prueba) {
     document.getElementById('tituloModalEEGPrueba').textContent = `EEG — ${prueba.nombre}`;
     document.getElementById('loaderEEGPrueba').style.display = 'block';
@@ -337,8 +347,7 @@ async function dibujarGraficaDesdeJSON(idSesion) {
             </span>
         `).join('');
 
-        // Ancho dinámico según la duración real: a mayor duración, más ancho (con scroll),
-        // en vez de aplastar todos los picos dentro del mismo espacio fijo
+        // Ancho dinámico según la duración real: a mayor duración, más ancho (con scroll)
         const PX_POR_SEGUNDO = 9; // suficiente separación para distinguir los picos de 1s
         const anchoMinimo = contenedorCanvas.clientWidth || 600;
         const anchoCalculado = Math.round(duracionSesion * PX_POR_SEGUNDO);
@@ -351,7 +360,7 @@ async function dibujarGraficaDesdeJSON(idSesion) {
         canvasEl.style.width = `${anchoFijo}px`;
         canvasEl.style.height = `${altoFijo}px`;
 
-        // Si el canvas cabe completo en el contenedor (sesión corta), se centra con margen.
+        // Si el canvas cabe completo en el contenedor (sesión corta), se centra con margen
         // Si necesita scroll (sesión larga), sin margen y arrancando en 0 para no tapar el eje Y
         if (necesitaScroll) {
             canvasEl.style.margin = '0';
